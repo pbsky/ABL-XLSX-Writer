@@ -17,7 +17,7 @@ USING ABL-XLSX-Writer.ABL-XLSX-Writer.writer.*.
 USING Progress.Json.ObjectModel.*.
 
 CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
-        
+
     DEFINE VARIABLE JSO_Style_Properties        AS CLASS JsonObject     NO-UNDO.
 
     DEFINE VARIABLE heading_pairs       AS CLASS JsonArray      NO-UNDO.
@@ -27,27 +27,27 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
     DEFINE PRIVATE PROPERTY number_format_count     AS INTEGER              GET. SET.
     DEFINE PRIVATE PROPERTY font_count              AS INTEGER              GET. SET.
-    DEFINE PRIVATE PROPERTY fill_count              AS INTEGER INITIAL 2    GET. SET.     
-    DEFINE PRIVATE PROPERTY border_count            AS INTEGER INITIAL 2    GET. SET.     
-    DEFINE PRIVATE PROPERTY xf_formats              AS HANDLE               GET. SET.   /** Handle to a temp-table of format Objects.**/  
-    DEFINE PRIVATE PROPERTY fonts                   AS HANDLE               GET. SET.   /** Handle to fonts temp-table.**/  
-    DEFINE PRIVATE PROPERTY Num_Format              AS HANDLE               GET. SET. 
-    DEFINE PRIVATE PROPERTY Fills                   AS HANDLE               GET. SET.   /** Handle to Fills temp-table.**/  
-    
+    DEFINE PRIVATE PROPERTY fill_count              AS INTEGER INITIAL 2    GET. SET.
+    DEFINE PRIVATE PROPERTY border_count            AS INTEGER INITIAL 2    GET. SET.
+    DEFINE PRIVATE PROPERTY xf_formats              AS HANDLE               GET. SET.   /** Handle to a temp-table of format Objects.**/
+    DEFINE PRIVATE PROPERTY fonts                   AS HANDLE               GET. SET.   /** Handle to fonts temp-table.**/
+    DEFINE PRIVATE PROPERTY Num_Format              AS HANDLE               GET. SET.
+    DEFINE PRIVATE PROPERTY Fills                   AS HANDLE               GET. SET.   /** Handle to Fills temp-table.**/
+
     DEFINE TEMP-TABLE ttcellXfs NO-UNDO XML-NODE-NAME 'cellXfs'
-        FIELD number_format_index AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId' 
-        FIELD font_index          AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'fontId' 
-        FIELD fill_index          AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'fillId' 
-        FIELD xfId                AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'xfId' 
-        INDEX idxnumFmtId   IS PRIMARY UNIQUE 
+        FIELD number_format_index AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId'
+        FIELD font_index          AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'fontId'
+        FIELD fill_index          AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'fillId'
+        FIELD xfId                AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'xfId'
+        INDEX idxnumFmtId   IS PRIMARY UNIQUE
             number_format_index.
 
     DEFINE TEMP-TABLE ttxf_formats NO-UNDO
-        FIELD number_format_index AS INTEGER XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId' 
+        FIELD number_format_index AS INTEGER XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId'
         FIELD number_format       AS CHARACTER.
 
     DEFINE PRIVATE TEMP-TABLE ttxf_format NO-UNDO
-            FIELD has_font          AS LOGICAL   
+            FIELD has_font          AS LOGICAL
             FIELD has_fill          AS LOGICAL
             FIELD has_border        AS LOGICAL
             FIELD font_condense     AS LOGICAL
@@ -61,7 +61,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
             .
 
     DEFINE VARIABLE data       AS CHARACTER   NO-UNDO.
-    
+
     CONSTRUCTOR Styles():
         JSO_Style_Properties  = NEW JsonObject().
         heading_pairs = NEW JsonArray().
@@ -141,7 +141,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
                                        INPUT hnNumFormat  AS HANDLE,
                                        INPUT hnFills      AS HANDLE):
 
-        /** hnxf_formats is the handle to a temp-table. The Temp-table 
+        /** hnxf_formats is the handle to a temp-table. The Temp-table
             contains a list of all the Format Class Objects.**/
 
         DEFINE VARIABLE hnQuery  AS HANDLE      NO-UNDO.
@@ -149,16 +149,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         DEFINE VARIABLE obj_FormatInstance      AS CLASS Format.
 
         IF VALID-HANDLE(hnxf_formats) AND hnxf_formats:TYPE EQ 'TEMP-TABLE' THEN
-            THIS-OBJECT:xf_formats = hnxf_formats. 
+            THIS-OBJECT:xf_formats = hnxf_formats.
 
         IF VALID-HANDLE(hnfonts) AND hnfonts:TYPE EQ 'TEMP-TABLE' THEN
-            THIS-OBJECT:fonts = hnfonts. 
+            THIS-OBJECT:fonts = hnfonts.
 
         IF VALID-HANDLE(hnNumFormat) AND hnNumFormat:TYPE EQ 'TEMP-TABLE' THEN
-            THIS-OBJECT:Num_Format = hnNumFormat. 
-        
+            THIS-OBJECT:Num_Format = hnNumFormat.
+
         IF VALID-HANDLE(hnFills) AND hnFills:TYPE EQ 'TEMP-TABLE' THEN
-            THIS-OBJECT:Fills = hnFills. 
+            THIS-OBJECT:Fills = hnFills.
 
 
 
@@ -169,18 +169,18 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         THIS-OBJECT:_write_style_sheet().
 
         THIS-OBJECT:_xml_close().
-        
+
     END METHOD.
 
     METHOD PRIVATE VOID _write_style_sheet():
 
         IF hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-ERROR THEN
             RETURN.
-        
+
         hnSAXWriter:START-ELEMENT('styleSheet').
         hnSAXWriter:DECLARE-NAMESPACE('http://schemas.openxmlformats.org/spreadsheetml/2006/main').
 
-        THIS-OBJECT:_write_num_fmts().     
+        THIS-OBJECT:_write_num_fmts().
 
         THIS-OBJECT:_write_fonts().
 
@@ -197,17 +197,17 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         THIS-OBJECT:_write_table_styles().
 
         THIS-OBJECT:_write_colors().
-  
+
         hnSAXWriter:END-ELEMENT('styleSheet').
     END METHOD.
 
     METHOD VOID _write_num_fmts():
-        
+
 
         DEFINE VARIABLE hnNumFmtsBuffer AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnQuery         AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnNum_Format    AS HANDLE      NO-UNDO.
-        
+
         hnNum_Format = THIS-OBJECT:Num_Format.
 
         IF NOT VALID-HANDLE(hnNum_Format) OR
@@ -222,7 +222,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
         CREATE QUERY hnQuery.
 
-        hnQuery:ADD-BUFFER(hnNumFmtsBuffer). 
+        hnQuery:ADD-BUFFER(hnNumFmtsBuffer).
         hnQuery:QUERY-PREPARE("PRESELECT EACH ttNumFormats BY ttNumFormats.number_format_index").
         hnQuery:QUERY-OPEN().
 
@@ -230,16 +230,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         DO:
             hnSAXWriter:START-ELEMENT('numFmts').
             hnSAXWriter:INSERT-ATTRIBUTE('count' , STRING(  hnQuery:NUM-RESULTS )). /** NOTE: NUM-RESULTS only works if you use 'PRESELECT' rather 'EACH'. **/
-            
-            hnQuery:GET-FIRST() NO-ERROR.                       
+
+            hnQuery:GET-FIRST() NO-ERROR.
             REPEAT WHILE NOT hnQuery:QUERY-OFF-END:
-    
+
                 THIS-OBJECT:_write_num_fmt(INPUT hnNumFmtsBuffer::number_format_index,
                                            INPUT hnNumFmtsBuffer::format_code ).
-    
-                hnQuery:GET-NEXT() NO-ERROR.                        
+
+                hnQuery:GET-NEXT() NO-ERROR.
             END.
-    
+
             hnQuery:QUERY-CLOSE().
 
             hnSAXWriter:END-ELEMENT('numFmts').
@@ -252,7 +252,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
                                INPUT num_Format_Code AS CHARACTER):
 
         DEFINE VARIABLE ch_FormatCode AS CHARACTER   NO-UNDO INITIAL 'General'.
-        
+
         IF num_Format_Id LT 164 THEN
         DO:
            IF THIS-OBJECT:JSO_Format_Codes:HAS( STRING(num_Format_Id) ) THEN
@@ -262,14 +262,14 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         END.
         ELSE
             ch_FormatCode = num_Format_Code.
-           
+
         hnSAXWriter:WRITE-EMPTY-ELEMENT('numFmt').
         hnSAXWriter:INSERT-ATTRIBUTE('numFmtId' , STRING( num_Format_Id )).
         hnSAXWriter:INSERT-ATTRIBUTE('formatCode' , ch_FormatCode).
-            
+
 
     END METHOD.
-    
+
     METHOD VOID _write_fonts():
 
         DEFINE VARIABLE hnBuffer AS HANDLE      NO-UNDO.
@@ -294,15 +294,15 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         DO:
             hnSAXWriter:START-ELEMENT('fonts').
             hnSAXWriter:INSERT-ATTRIBUTE('count', STRING(hnQuery:NUM-RESULTS) ).
-            
+
             hnQuery:GET-FIRST() NO-ERROR.
-    
+
             REPEAT WHILE NOT hnQuery:QUERY-OFF-END:
-    
+
                 THIS-OBJECT:_write_font(INPUT hnBuffer).
                 hnQuery:GET-NEXT() NO-ERROR.
             END.
-    
+
             hnSAXWriter:END-ELEMENT('fonts').
             hnQuery:QUERY-CLOSE().
         END.
@@ -311,7 +311,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
     END METHOD.
 
     METHOD VOID _write_font (INPUT hnFontBuffer AS HANDLE):
-                    
+
 /*         /** Write  the Default font.. **/               */
 /*         hnSAXWriter:START-ELEMENT('font').              */
 /*         hnSAXWriter:WRITE-EMPTY-ELEMENT('sz').          */
@@ -329,8 +329,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 /*         hnSAXWriter:WRITE-EMPTY-ELEMENT('scheme').      */
 /*         hnSAXWriter:INSERT-ATTRIBUTE('val', 'minor').   */
 /*         hnSAXWriter:END-ELEMENT('font').                */
-        
-        IF NOT VALID-HANDLE( hnFontBuffer) OR 
+
+        IF NOT VALID-HANDLE( hnFontBuffer) OR
            NOT hnFontBuffer:type EQ 'BUFFER' THEN
             RETURN.
 
@@ -367,9 +367,9 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         /* underline */
         IF LOGICAL(hnFontBuffer::f_underline) THEN
             THIS-OBJECT:_write_underline( hnFontBuffer::f_underline ).
-        
+
 /*         hnSAXWriter:INSERT-ATTRIBUTE('x14ac:knownFonts','1'). */
-                
+
         hnSAXWriter:WRITE-EMPTY-ELEMENT('sz').
         hnSAXWriter:INSERT-ATTRIBUTE('val', STRING(hnFontBuffer::font_size)).
 
@@ -389,11 +389,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
             END.
         END.
 
-        
-        
+
+
         hnSAXWriter:WRITE-EMPTY-ELEMENT('family').
         hnSAXWriter:INSERT-ATTRIBUTE('val', STRING(hnFontBuffer::family)).
-        
+
         hnSAXWriter:WRITE-EMPTY-ELEMENT('scheme').
         hnSAXWriter:INSERT-ATTRIBUTE('val', 'minor').
 
@@ -402,7 +402,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
     END METHOD.
 
     METHOD PRIVATE VOID _write_underline(INPUT IN_underline AS INTEGER):
-        
+
         hnSAXWriter:WRITE-EMPTY-ELEMENT('u').
 
         /**  doubleAccounting,singleAccounting,double **/
@@ -416,18 +416,18 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
                 hnSAXWriter:INSERT-ATTRIBUTE('val', 'singleAccounting'). /** Single Line Accounting.. **/
             WHEN 4 THEN
                 hnSAXWriter:INSERT-ATTRIBUTE('val', 'doubleAccounting'). /** Double Line Accounting.. **/
-            
+
         END CASE.
 
     END METHOD.
 
-    
+
     METHOD VOID _write_fills():
 
         DEFINE VARIABLE hnFills       AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnFill       AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnQuery          AS HANDLE      NO-UNDO.
-        DEFINE VARIABLE obFormatInstance AS CLASS FORMAT.
+        DEFINE VARIABLE obFormatInstance AS CLASS Format.
 
         hnFills = THIS-OBJECT:Fills.
 
@@ -457,10 +457,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
         hnSAXWriter:START-ELEMENT('fills').
         hnSAXWriter:INSERT-ATTRIBUTE('count', STRING( hnQuery:NUM-RESULTS ) ).
-        
+
         IF hnQuery:IS-OPEN THEN
         DO:
-            
+
             hnQuery:GET-FIRST() NO-ERROR.
 
             REPEAT WHILE NOT hnQuery:QUERY-OFF-END:
@@ -470,7 +470,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
             hnQuery:QUERY-CLOSE().
         END.
-        
+
         DELETE OBJECT hnQuery.
 
         hnSAXWriter:END-ELEMENT('fills').
@@ -494,12 +494,12 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
         ASSIGN
             inPattern    = hnFill::pattern
-            chbg_colour  = hnFill::bg_colour   
+            chbg_colour  = hnFill::bg_colour
             chfg_colour  = hnFill::fg_colour.
 
         hnSAXWriter:START-ELEMENT('fill').
         hnSAXWriter:START-ELEMENT('patternFill').
-        
+
         IF inPattern GT 0 THEN
             hnSAXWriter:INSERT-ATTRIBUTE('patternType', JSO_patterns:GetCharacter( inPattern ) ).
 
@@ -520,7 +520,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         hnSAXWriter:END-ELEMENT('patternFill').
         hnSAXWriter:END-ELEMENT('fill').
     END METHOD.
-    
+
     METHOD VOID _write_borders():
 
 
@@ -530,7 +530,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         THIS-OBJECT:_write_border().
 
         hnSAXWriter:END-ELEMENT('borders').
-    
+
 /*         hnSAXWriter:START-ELEMENT('borders').                                     */
 /*         hnSAXWriter:INSERT-ATTRIBUTE('count', STRING(THIS-OBJECT:border_count) ). */
 /*                                                                                   */
@@ -545,15 +545,15 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
     END METHOD.
 
     METHOD VOID _write_border():
-        
+
         hnSAXWriter:START-ELEMENT('border').
-    
+
             hnSAXWriter:WRITE-EMPTY-ELEMENT('left').
             hnSAXWriter:WRITE-EMPTY-ELEMENT('right').
             hnSAXWriter:WRITE-EMPTY-ELEMENT('top').
             hnSAXWriter:WRITE-EMPTY-ELEMENT('bottom').
             hnSAXWriter:WRITE-EMPTY-ELEMENT('diagonal').
-    
+
         hnSAXWriter:END-ELEMENT('border').
 
     END METHOD.
@@ -582,8 +582,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
         DEFINE VARIABLE hnxf_formats        AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnxf_format         AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnQuery             AS HANDLE      NO-UNDO.
-        DEFINE VARIABLE obFormatInstance    AS CLASS FORMAT NO-UNDO.
-        
+        DEFINE VARIABLE obFormatInstance    AS CLASS Format NO-UNDO.
+
         hnxf_formats = THIS-OBJECT:xf_formats.
 
         IF NOT VALID-HANDLE(xf_formats) OR
@@ -599,10 +599,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
         IF hnQuery:IS-OPEN THEN
         DO:
-            
+
             hnSAXWriter:START-ELEMENT('cellXfs').
             hnSAXWriter:INSERT-ATTRIBUTE('count', STRING( hnQuery:NUM-RESULTS ) ).
-            
+
             hnQuery:GET-FIRST() NO-ERROR.
 
 /*             hnSAXWriter:WRITE-COMMENT('ttxf_Formats.format_index: ' + STRING( hnxf_format::format_index ) ). */
@@ -622,13 +622,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
             hnSAXWriter:END-ELEMENT('cellXfs').
 
         END.
-        
+
         DELETE OBJECT hnQuery.
 
     END METHOD.
 
-    METHOD PRIVATE VOID _write_xf(INPUT ob_Format_Instance AS CLASS FORMAT):
-        
+    METHOD PRIVATE VOID _write_xf(INPUT ob_Format_Instance AS CLASS Format):
+
         DEFINE VARIABLE hn_alignment_attributes AS HANDLE.
 
         IF NOT VALID-OBJECT(ob_Format_Instance) THEN
@@ -641,7 +641,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
             hnSAXWriter:START-ELEMENT('xf').
         ELSE
             hnSAXWriter:WRITE-EMPTY-ELEMENT('xf').
-    
+
 /*         hnSAXWriter:INSERT-ATTRIBUTE('Id',  STRING(ob_Format_Instance:xf_index) ). */
 
         hnSAXWriter:INSERT-ATTRIBUTE('numFmtId', STRING(ob_Format_Instance:num_format_index) ).
@@ -669,7 +669,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
             DELETE OBJECT hn_alignment_attributes.
             hnSAXWriter:END-ELEMENT('xf').
         END.
-        
+
     END METHOD.
 
 
@@ -684,7 +684,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Styles INHERITS xmlwriter:
 
     METHOD PRIVATE VOID _write_cell_style():
          /*# Write the <cellStyle> element.*/
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('cellStyle').  
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('cellStyle').
         hnSAXWriter:INSERT-ATTRIBUTE('name', 'Normal').
         hnSAXWriter:INSERT-ATTRIBUTE('xfId', '0').
         hnSAXWriter:INSERT-ATTRIBUTE('builtinId', '0').

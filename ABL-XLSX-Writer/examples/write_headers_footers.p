@@ -2,10 +2,10 @@ USING ABL-XLSX-Writer.ABL-XLSX-Writer.writer.*.
 
 DEFINE VARIABLE objWorkbook     AS CLASS Workbook   NO-UNDO.
 DEFINE VARIABLE objWorksheet    AS CLASS Worksheet  NO-UNDO.
-DEFINE VARIABLE ob_Format       AS CLASS FORMAT     NO-UNDO.
-DEFINE VARIABLE ob_DateFormat   AS CLASS FORMAT     NO-UNDO.
-DEFINE VARIABLE ob_TitleFormat  AS CLASS FORMAT     NO-UNDO.
-DEFINE VARIABLE param_DataTime  AS DATETIME         NO-UNDO. 
+DEFINE VARIABLE ob_Format       AS CLASS Format     NO-UNDO.
+DEFINE VARIABLE ob_DateFormat   AS CLASS Format     NO-UNDO.
+DEFINE VARIABLE ob_TitleFormat  AS CLASS Format     NO-UNDO.
+DEFINE VARIABLE param_DataTime  AS DATETIME         NO-UNDO.
 DEFINE VARIABLE inLoop AS INTEGER     NO-UNDO.
 
 param_DataTime = NOW.
@@ -26,10 +26,10 @@ objWorkbook:set_properties('status', 'Everything is Awsome').
 objWorksheet = objWorkbook:add_worksheet('Header Footer').
 
 objWorksheet:write(1,1,'TEST').
-    
- objWorksheet:set_header('Header',?). 
- objWorksheet:set_footer('Footer',?). 
-     
+
+ objWorksheet:set_header('Header',?).
+ objWorksheet:set_footer('Footer',?).
+
 
 objWorkbook:close().
 
@@ -37,7 +37,7 @@ objWorkbook:close().
 
 
 
-                    
+
 
 
 

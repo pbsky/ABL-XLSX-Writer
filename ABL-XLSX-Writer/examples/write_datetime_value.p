@@ -2,8 +2,8 @@ USING ABL-XLSX-Writer.ABL-XLSX-Writer.writer.*.
 
 DEFINE VARIABLE objWorkbook          AS CLASS Workbook   NO-UNDO.
 DEFINE VARIABLE objWorksheet         AS CLASS Worksheet  NO-UNDO.
-DEFINE VARIABLE obj_DateTime_Format  AS CLASS FORMAT  NO-UNDO.
-DEFINE VARIABLE obj_Text_Format      AS CLASS FORMAT  NO-UNDO.
+DEFINE VARIABLE obj_DateTime_Format  AS CLASS Format  NO-UNDO.
+DEFINE VARIABLE obj_Text_Format      AS CLASS Format  NO-UNDO.
 
 DEFINE VARIABLE da_date_time_now AS DATETIME  NO-UNDO.
 
@@ -22,9 +22,9 @@ objWorksheet        = objWorkbook:add_worksheet('Date Time').
 objWorksheet:set_tab_color('red').
 
 /** Create an new format object **/
-  
+
 obj_DateTime_Format = objWorkbook:add_format().
-obj_Text_Format     = objWorkbook:add_format().  
+obj_Text_Format     = objWorkbook:add_format().
 
 
 

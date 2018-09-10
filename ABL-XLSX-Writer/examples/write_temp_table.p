@@ -2,12 +2,14 @@ USING ABL-XLSX-Writer.ABL-XLSX-Writer.writer.*.
 
 DEFINE VARIABLE objWorkbook          AS CLASS Workbook   NO-UNDO.
 DEFINE VARIABLE objWorksheet         AS CLASS Worksheet  NO-UNDO.
-DEFINE VARIABLE obj_DateTime_Format  AS CLASS FORMAT  NO-UNDO.
-DEFINE VARIABLE obj_Text_Format      AS CLASS FORMAT  NO-UNDO.
+DEFINE VARIABLE obj_DateTime_Format  AS CLASS Format  NO-UNDO.
+DEFINE VARIABLE obj_Text_Format      AS CLASS Format  NO-UNDO.
 
 DEFINE VARIABLE inCounter       AS INTEGER     NO-UNDO.
 
 DEFINE VARIABLE hn_TempTable     AS HANDLE      NO-UNDO.
+
+/*
 
 DEFINE TEMP-TABLE ttTMRResults LIKE TMRResults.
 
@@ -51,3 +53,5 @@ objWorkbook:close().
 
 /** Show the filename of the xlsx document that been created using the filename property.**/
 MESSAGE objWorkbook:filename VIEW-AS ALERT-BOX INFO.
+
+*/

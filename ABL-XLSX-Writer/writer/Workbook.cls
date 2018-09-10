@@ -32,21 +32,21 @@ DEFINE STREAM SOSCOMMAND.
     DEFINE PRIVATE PROPERTY format_count        AS INTEGER      INITIAL 0       GET. SET.
     DEFINE PUBLIC  PROPERTY SharedStringTable   AS CLASS SharedStringTable      GET. SET.
     DEFINE PUBLIC  PROPERTY xf_formats          AS HANDLE                       GET. PRIVATE SET.
-    
-    
+
+
 
     DEFINE PRIVATE PROPERTY xf_Format_indices   AS CLASS JSONOBJECT             GET. SET.
     DEFINE PRIVATE PROPERTY dxf_Format_indices  AS CLASS JSONOBJECT             GET. SET.
 
     DEFINE PRIVATE PROPERTY obj_DefaultFormats  AS CLASS Format                 GET. SET.
-    
-    
+
+
 
     DEFINE PRIVATE TEMP-TABLE ttWorkSheet NO-UNDO
         FIELD SheetName     AS CHARACTER
         FIELD SheetID       AS INTEGER
         FIELD HIDDEN        AS LOGICAL INITIAL FALSE
-        FIELD ObjWorkSheet  AS CLASS Progress.Lang.OBJECT 
+        FIELD ObjWorkSheet  AS CLASS Progress.Lang.OBJECT
         INDEX idxSheetID IS PRIMARY
             SheetID .
 
@@ -55,12 +55,12 @@ DEFINE STREAM SOSCOMMAND.
         FIELD format_delete AS LOGICAL INITIAL TRUE
         FIELD ObjFormat     AS CLASS Progress.Lang.OBJECT
 
-        INDEX idxIndex IS PRIMARY 
+        INDEX idxIndex IS PRIMARY
             format_index
-        INDEX idxFormat 
+        INDEX idxFormat
             ObjFormat .
 
-    DEFINE PRIVATE TEMP-TABLE ttProperties NO-UNDO 
+    DEFINE PRIVATE TEMP-TABLE ttProperties NO-UNDO
         FIELD wb_title   AS CHARACTER    SERIALIZE-NAME 'title'
         FIELD subject    AS CHARACTER    SERIALIZE-NAME 'subject'
         FIELD author     AS CHARACTER    SERIALIZE-NAME 'author'
@@ -73,19 +73,19 @@ DEFINE STREAM SOSCOMMAND.
         .
 
     DEFINE TEMP-TABLE ttNumFormats NO-UNDO XML-NODE-NAME 'numFmts'
-        FIELD number_format_index AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId' 
+        FIELD number_format_index AS INTEGER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'numFmtId'
         FIELD format_code         AS CHARACTER  XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'formatCode'
-        INDEX idxnumFmtId   IS PRIMARY  
+        INDEX idxnumFmtId   IS PRIMARY
             number_format_index
-        INDEX idxFormatCode IS UNIQUE 
+        INDEX idxFormatCode IS UNIQUE
             format_code.
 
     DEFINE TEMP-TABLE ttFonts NO-UNDO XML-NODE-NAME 'font'
-        FIELD font_index    AS INTEGER    XML-NODE-TYPE 'HIDDEN' 
-        FIELD font_name     AS CHARACTER  XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'name' 
-        FIELD font_size     AS DECIMAL    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'sz' 
-        FIELD charset       AS INTEGER    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'charset' 
-        FIELD family        AS INTEGER    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'family' 
+        FIELD font_index    AS INTEGER    XML-NODE-TYPE 'HIDDEN'
+        FIELD font_name     AS CHARACTER  XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'name'
+        FIELD font_size     AS DECIMAL    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'sz'
+        FIELD charset       AS INTEGER    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'charset'
+        FIELD family        AS INTEGER    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'family'
         FIELD bold          AS LOGICAL    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'b'
         FIELD italic        AS LOGICAL    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'i'
         FIELD f_underline   AS INTEGER    XML-NODE-TYPE 'ELEMENT' XML-NODE-NAME 'u'
@@ -100,22 +100,22 @@ DEFINE STREAM SOSCOMMAND.
 
     DEFINE TEMP-TABLE ttDefineNames NO-UNDO XML-NODE-NAME 'definedNames'
         FIELD name          AS CHARACTER    XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'name'
-        FIELD sheet_id      AS INTEGER      XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'localSheetId' 
+        FIELD sheet_id      AS INTEGER      XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'localSheetId'
         FIELD sheet_range   AS CHARACTER    XML-NODE-TYPE 'ELEMENT'     XML-NODE-NAME 'definedName'
-        FIELD hidden        AS LOGICAL      XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'hidden'  
+        FIELD hidden        AS LOGICAL      XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'hidden'
         INDEX idxName   IS PRIMARY
             name.
 
     DEFINE TEMP-TABLE ttFills NO-UNDO XML-NODE-NAME 'fills'
-        FIELD fill_index    AS INTEGER    XML-NODE-TYPE 'HIDDEN' 
-        FIELD pattern       AS INTEGER 
+        FIELD fill_index    AS INTEGER    XML-NODE-TYPE 'HIDDEN'
+        FIELD pattern       AS INTEGER
         FIELD bg_Colour     AS CHARACTER  XML-NODE-TYPE 'ATTRIBUTE'
         FIELD fg_Colour     AS CHARACTER  XML-NODE-TYPE 'ATTRIBUTE'
         INDEX idxFills   IS PRIMARY
                 fill_index.
-    
+
     CONSTRUCTOR Workbook(INPUT pchExcel AS CHARACTER):
-        
+
         /** Check for logical file locks created be MS Office Excel**/
 
         IF SEARCH('~~$' + pchExcel) NE ?  THEN
@@ -126,21 +126,21 @@ DEFINE STREAM SOSCOMMAND.
 
             RETURN ERROR.
         END.
-        
+
         FILE-INFO:FILE-NAME = SESSION:TEMP-DIR.
 
         THIS-OBJECT:filename           = pchExcel.
         THIS-OBJECT:TempDir            = FILE-INFO:FULL-PATHNAME.
         THIS-OBJECT:SharedStringTable  = NEW SharedStringTable().
 
-        THIS-OBJECT:xf_Format_indices  = NEW JSONOBJECT(). 
+        THIS-OBJECT:xf_Format_indices  = NEW JSONOBJECT().
         THIS-OBJECT:dxf_Format_indices = NEW JSONOBJECT().
 
         THIS-OBJECT:xf_formats         = TEMP-TABLE ttxf_Formats:HANDLE.
-        
+
         /** Load the defaults Formats etc. **/
         THIS-OBJECT:add_Format(INPUT 0).
-        
+
     END CONSTRUCTOR.
 
     DESTRUCTOR Workbook():
@@ -163,7 +163,7 @@ DEFINE STREAM SOSCOMMAND.
 
         EMPTY TEMP-TABLE ttxf_Formats.
 
-    END DESTRUCTOR.        
+    END DESTRUCTOR.
 
     METHOD PUBLIC HANDLE Fills():
         RETURN TEMP-TABLE ttFills:HANDLE.
@@ -181,19 +181,19 @@ DEFINE STREAM SOSCOMMAND.
         RETURN TEMP-TABLE ttNumFormats:HANDLE.
     END METHOD.
 
-    
-    
+
+
 
 
     /** PUBLIC METHODS... **/
 
-    METHOD PUBLIC VOID set_properties(INPUT ch_ParameterKey   AS CHARACTER, 
+    METHOD PUBLIC VOID set_properties(INPUT ch_ParameterKey   AS CHARACTER,
                                       INPUT ch_ParameterValue AS CHARACTER):
-        
+
         DEFINE VARIABLE hnProperties    AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnPropertyField AS HANDLE      NO-UNDO.
-        
-        ch_ParameterKey = TRIM(ch_ParameterKey).            
+
+        ch_ParameterKey = TRIM(ch_ParameterKey).
         hnProperties    = TEMP-TABLE ttProperties:DEFAULT-BUFFER-HANDLE.
 
         hnProperties:FIND-FIRST() NO-ERROR.
@@ -226,23 +226,23 @@ DEFINE STREAM SOSCOMMAND.
     METHOD PUBLIC CLASS Worksheet add_worksheet( INPUT pcSheetName AS CHARACTER):
 
         DEFINE VARIABLE ObjNewWorkSheet AS CLASS Worksheet.
-        
+
         THIS-OBJECT:sheetname_count = THIS-OBJECT:sheetname_count + 1.
-        
+
         ObjNewWorkSheet = NEW Worksheet(INPUT THIS-OBJECT,
                                         INPUT pcSheetName).
-        
-        /** Share the Global Shared String Table Class Object. In Theory 
+
+        /** Share the Global Shared String Table Class Object. In Theory
             there should only ever be one instance of the class object. **/
         ObjNewWorkSheet:SharedStringTable = THIS-OBJECT:SharedStringTable.
 
         CREATE ttWorkSheet.
-        
+
         ASSIGN
             ttWorkSheet.SheetName    = pcSheetName
             ttWorkSheet.SheetID      = THIS-OBJECT:sheetname_count
-            ttWorkSheet.ObjWorkSheet = ObjNewWorkSheet. 
-        
+            ttWorkSheet.ObjWorkSheet = ObjNewWorkSheet.
+
         RETURN ObjNewWorkSheet.
 
     END METHOD.
@@ -252,7 +252,7 @@ DEFINE STREAM SOSCOMMAND.
     END METHOD.
 
     METHOD PUBLIC HANDLE worksheets():
-            
+
         /** Return the temp-table's HANDLE attribute. **/
         IF VALID-HANDLE(TEMP-TABLE ttWorkSheet:HANDLE) THEN
            RETURN TEMP-TABLE ttWorkSheet:HANDLE.
@@ -267,9 +267,9 @@ DEFINE STREAM SOSCOMMAND.
     END METHOD.
 
     METHOD PUBLIC CLASS Format add_Format(INPUT in_format_index AS INTEGER):
-        
+
         DEFINE VARIABLE ob_Format AS CLASS Format no-undo.
-        
+
         ob_Format = NEW Format(INPUT THIS-OBJECT:xf_Format_indices,
                                INPUT THIS-OBJECT:dxf_Format_indices).
 
@@ -283,7 +283,7 @@ DEFINE STREAM SOSCOMMAND.
 
         RETURN ob_Format.
     END METHOD.
-    
+
     METHOD PUBLIC CLASS Format add_Format(INPUT ch_format_options AS CHARACTER):
 
         DEFINE VARIABLE chValidProperties  AS CHARACTER    NO-UNDO.
@@ -360,14 +360,14 @@ DEFINE STREAM SOSCOMMAND.
                         ob_Format:set_pattern(INPUT INTEGER(de_NumberProperty) ).
                     WHEN 'indent' THEN
                         ob_Format:set_indent(INPUT INTEGER(de_NumberProperty) ).
-                    
+
                 END CASE.
 
                 NEXT FORMAT_OPTION.
             END.
 
             /*** DEFAULT To be being a CHARACTER DATA-TYPE***/
-                
+
             ch_PropertyValue = TRIM(ch_PropertyValue,'"').
 
             CASE ch_PropertyName:
@@ -387,7 +387,7 @@ DEFINE STREAM SOSCOMMAND.
             END CASE.
 
         END.
-        
+
         chValidProperties = "font_name,font_status,font_colour,bold,italic,underline,font_strikeout,font_script,num_format,locked,hidden,align,valign,rotation,text_wrap,text_justlast".
 
         RETURN ob_Format.
@@ -410,26 +410,26 @@ DEFINE STREAM SOSCOMMAND.
           /* Rearrange formats into index order.*/
 
         DEFINE VARIABLE in_index            AS INTEGER     NO-UNDO.
-        DEFINE VARIABLE ob_format_instance  AS CLASS FORMAT NO-UNDO.
-        DEFINE VARIABLE ob_format_temp      AS CLASS FORMAT NO-UNDO.
+        DEFINE VARIABLE ob_format_instance  AS CLASS Format NO-UNDO.
+        DEFINE VARIABLE ob_format_temp      AS CLASS Format NO-UNDO.
 
         DEFINE BUFFER ttxf_Formats  FOR TEMP-TABLE ttxf_Formats.
         DEFINE BUFFER xf_Formats    FOR TEMP-TABLE ttxf_Formats.
-        
-        
+
+
 
         FOR EACH ttxf_Formats:
 
             ob_format_instance = CAST(ttxf_Formats.OBJFormat, format).
             in_index = ob_format_instance:xf_index.
-            
-            FIND FIRST xf_Formats 
-                 WHERE xf_Formats.format_index EQ in_index 
-                   AND ROWID(xf_Formats) NE ROWID(ttxf_Formats) 
+
+            FIND FIRST xf_Formats
+                 WHERE xf_Formats.format_index EQ in_index
+                   AND ROWID(xf_Formats) NE ROWID(ttxf_Formats)
                 NO-ERROR.
 
             IF AVAILABLE xf_Formats THEN
-                DELETE ttxf_Formats. 
+                DELETE ttxf_Formats.
             ELSE
                 ttxf_Formats.format_index = in_index.
 
@@ -438,7 +438,7 @@ DEFINE STREAM SOSCOMMAND.
     END METHOD.
 
     METHOD PRIVATE VOID _prepare_fonts():
-        
+
         DEFINE VARIABLE ob_Format        AS CLASS format.
         DEFINE VARIABLE obAvaialbleFonts AS CLASS JsonObject.
         DEFINE VARIABLE inFont_Index     AS INTEGER      NO-UNDO.
@@ -448,13 +448,13 @@ DEFINE STREAM SOSCOMMAND.
 
         /** Create a font reocrd. **/
         obAvaialbleFonts      = NEW JsonObject().
-        
+
         FOR EACH ttxf_Formats:
              ob_Format = CAST(ttxf_Formats.ObjFormat, format).
 
              chFontKey = ob_Format:_get_font_key().
 
-             /** If the format object font as already been defined 
+             /** If the format object font as already been defined
                  by another format class object, use that. **/
 
              IF obAvaialbleFonts:HAS(chFontKey) THEN
@@ -469,7 +469,7 @@ DEFINE STREAM SOSCOMMAND.
 
                  ob_Format:font_index = inFont_Index.
                  ob_Format:has_font   = TRUE.
-                 inFont_Index         = inFont_Index + 1. 
+                 inFont_Index         = inFont_Index + 1.
 
                  CREATE ttFonts.
 
@@ -481,15 +481,15 @@ DEFINE STREAM SOSCOMMAND.
                      ttFonts.family      = ob_Format:font_family
                      ttFonts.bold        = ob_Format:bold
                      ttFonts.italic      = ob_Format:italic
-                     ttFonts.f_underline = ob_Format:underline   /* doubleAccounting,singleAccounting,double*/     
+                     ttFonts.f_underline = ob_Format:underline   /* doubleAccounting,singleAccounting,double*/
                      ttFonts.strike      = ob_Format:font_strike
                      ttFonts.outline     = ob_Format:font_outline
-                     ttFonts.shadow      = ob_Format:font_shadow 
+                     ttFonts.shadow      = ob_Format:font_shadow
                      ttFonts.colour      = ob_Format:font_colour.    /** NOTE TO SELF: color is a progress researce word.*/
 
              END.
         END.
-        
+
     END METHOD.
 
     METHOD PRIVATE VOID _prepare_num_formats():
@@ -499,28 +499,28 @@ DEFINE STREAM SOSCOMMAND.
         DEFINE VARIABLE in_num_format_count AS INTEGER INITIAL 0    NO-UNDO.
         DEFINE VARIABLE ch_FormatCode       AS CHARACTER            NO-UNDO.
         DEFINE VARIABLE JSO_Num_Formats     AS CLASS JSONOBJECT     NO-UNDO.
-        
+
         JSO_Num_Formats = NEW JSONOBJECT().
-        
+
         FOR EACH ttxf_Formats:
             ob_Format = CAST(ttxf_Formats.ObjFormat, format).
-        
+
             IF NOT VALID-OBJECT(ob_Format) THEN
                 NEXT.
-        
+
             ch_FormatCode = ob_Format:num_format.
-            
+
 /*             ob_Format:num_format_index = INTEGER(ch_FormatCode) NO-ERROR. */
 
-            /** If the format object font as already been defined 
+            /** If the format object font as already been defined
                 by another format class object, use that. **/
             IF JSO_Num_Formats:HAS( ch_FormatCode ) THEN
                 ob_Format:num_format_index = JSO_Num_Formats:GetInteger(ch_FormatCode ).
             ELSE
             DO:
                 JSO_Num_Formats:ADD(ch_FormatCode, in_Index).
-                ob_Format:num_format_index = in_Index. 
-                
+                ob_Format:num_format_index = in_Index.
+
                 CREATE ttNumFormats.
 
                 ASSIGN
@@ -576,13 +576,13 @@ DEFINE STREAM SOSCOMMAND.
         obAvaialbleFills:ADD(':{&xcGray125}:::', 1).
 
         inFill_Index = 2.
-        
+
         FOR EACH ttxf_Formats:
             ob_Format = CAST(ttxf_Formats.ObjFormat, format).
 
              /** Solid fills get inverted.**/
 
-            IF ob_Format:pattern   EQ {&xcSolid} AND 
+            IF ob_Format:pattern   EQ {&xcSolid} AND
                ob_Format:bg_colour NE '' AND
                ob_Format:fg_colour NE '' THEN
             DO:
@@ -591,18 +591,18 @@ DEFINE STREAM SOSCOMMAND.
                 ob_Format:bg_colour = chTempColour.
             END.
 
-            IF ob_Format:pattern   LE {&xcSolid}  AND 
+            IF ob_Format:pattern   LE {&xcSolid}  AND
                ob_Format:bg_colour NE '' AND
-               ob_Format:fg_colour EQ '' THEN 
+               ob_Format:fg_colour EQ '' THEN
             DO:
                 ob_Format:fg_colour = ob_Format:bg_colour.
                 ob_Format:bg_colour = ''.
                 ob_Format:pattern   = {&xcSolid}.    /* 2 = Solid */
             END.
 
-            IF ob_Format:pattern   LE {&xcSolid}  AND 
+            IF ob_Format:pattern   LE {&xcSolid}  AND
                ob_Format:bg_colour EQ '' AND
-               ob_Format:fg_colour NE '' THEN 
+               ob_Format:fg_colour NE '' THEN
             DO:
                 ob_Format:bg_colour = ''.
                 ob_Format:pattern   = {&xcSolid}.    /* 2 = Solid */
@@ -610,7 +610,7 @@ DEFINE STREAM SOSCOMMAND.
 
             chFillKey = ob_Format:_get_fill_key().
 
-            /** If the format object font as already been defined 
+            /** If the format object font as already been defined
                  by another format class object, use that. **/
 
              IF obAvaialbleFills:HAS(chFillKey) THEN
@@ -625,7 +625,7 @@ DEFINE STREAM SOSCOMMAND.
 
                  ob_Format:fill_index = inFill_Index.
                  ob_Format:has_fill   = TRUE.
-                 inFill_Index         = inFill_Index + 1. 
+                 inFill_Index         = inFill_Index + 1.
 
                  CREATE ttFills.
 
@@ -646,13 +646,13 @@ DEFINE STREAM SOSCOMMAND.
 
         DEFINE VARIABLE ObjClassInstance     AS CLASS Progress.Lang.Object .
         DEFINE VARIABLE ObjWorkSheetInstance AS CLASS Worksheet.
-            
+
         THIS-OBJECT:_prepare_format_properties().
 
         /** Create a new Worksheet if one has not been defined. **/
-        IF NOT CAN-FIND(FIRST ttWorkSheet) THEN 
+        IF NOT CAN-FIND(FIRST ttWorkSheet) THEN
             THIS-OBJECT:add_worksheet().
-        
+
         /** Write the workbook element. **/
         THIS-OBJECT:_write_workbook().
 
@@ -666,43 +666,43 @@ DEFINE STREAM SOSCOMMAND.
     /** PRIVATE METHODS... **/
 
     METHOD PRIVATE VOID _store_workbook():
-        
+
         DEFINE VARIABLE chXMLFiles      AS CHARACTER    NO-UNDO.
         DEFINE VARIABLE objPackager     AS CLASS Packager NO-UNDO.
         DEFINE VARIABLE INETIME         AS INTEGER     NO-UNDO.
         DEFINE VARIABLE chOSCOMMAND     AS CHARACTER   NO-UNDO.
 
         THIS-OBJECT:_prepare_sst_string_data().
-        
+
         THIS-OBJECT:_prepare_vml().
-        
+
         THIS-OBJECT:_prepare_defined_names().
-        
+
         THIS-OBJECT:_prepare_drawings().
-        
+
         THIS-OBJECT:_add_chart_data().
-        
+
         THIS-OBJECT:_prepare_tables().
-        
+
         objPackager = NEW Packager().
 
         objPackager:_add_workbook(THIS-OBJECT).
         objPackager:_set_tmpdir( THIS-OBJECT:TempDir ).
 
-        
+
          chXMLFiles = objPackager:_create_package().
 
 /*         DEFINE VARIABLE obj_Zip     AS ZipFile NO-UNDO. */
         DEFINE VARIABLE zipPath     AS CHARACTER   NO-UNDO.
         DEFINE VARIABLE startPath   AS CHARACTER   NO-UNDO.
-         
+
         FILE-INFO:FILE-NAME = '.'.
-        
+
 /*         startPath   = FILE-INFO:FULL-PATHNAME + "/temp/ablxml". */
 /*         zipPath     = FILE-INFO:FULL-PATHNAME + "/ablxml.zip".  */
-        
+
         OS-DELETE VALUE(THIS-OBJECT:filename).
-        
+
 /*         ZipFile:CreateFromDirectory(objPackager:temp-dir, THIS-OBJECT:filename). */
 /*                                                                                  */
 
@@ -726,7 +726,7 @@ DEFINE STREAM SOSCOMMAND.
         MESSAGE chOSCOMMAND.
 
         DEFINE VARIABLE chInputResponce AS CHARACTER   NO-UNDO.
-        
+
         INPUT STREAM SOSCOMMAND THROUGH VALUE(chOSCOMMAND) UNBUFFERED.
         REPEAT:
 
@@ -740,11 +740,11 @@ DEFINE STREAM SOSCOMMAND.
 
 /*         OS-COMMAND SILENT VALUE(chOSCOMMAND). */
 
-        DELETE OBJECT objPackager.            
+        DELETE OBJECT objPackager.
     END METHOD.
 
     METHOD PRIVATE VOID _write_workbook():
-            
+
         IF hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-ERROR THEN
             RETURN.
 
@@ -770,7 +770,7 @@ DEFINE STREAM SOSCOMMAND.
 
         /** Write the calcPr element. **/
         THIS-OBJECT:_write_calc_pr().
-        
+
         hnSAXWriter:END-ELEMENT('workbook').
 
     END METHOD.
@@ -792,19 +792,19 @@ DEFINE STREAM SOSCOMMAND.
 
         hnSAXWriter:START-ELEMENT('bookViews').
         hnSAXWriter:WRITE-EMPTY-ELEMENT('workbookView').
-        
+
         hnSAXWriter:INSERT-ATTRIBUTE('xWindow', '480').
         hnSAXWriter:INSERT-ATTRIBUTE('yWindow', '30').
         hnSAXWriter:INSERT-ATTRIBUTE('windowWidth', '18195').
         hnSAXWriter:INSERT-ATTRIBUTE('windowHeight', '12075').
-        
+
         hnSAXWriter:END-ELEMENT('bookViews').
     END METHOD.
 
     METHOD PRIVATE VOID _write_sheets():
 
         hnSAXWriter:START-ELEMENT('sheets').
-        
+
         FOR EACH ttWorkSheet
             BY ttWorkSheet.sheetID:
             THIS-OBJECT:_write_sheet(ttWorkSheet.sheetname,ttWorkSheet.sheetID,ttWorkSheet.hidden).
@@ -840,7 +840,7 @@ DEFINE STREAM SOSCOMMAND.
     END METHOD.
 
     METHOD PRIVATE VOID _write_defined_names():
-        
+
 /*     DEFINE TEMP-TABLE ttDefineNames NO-UNDO XML-NODE-NAME 'definedNames'                             */
 /*         FIELD name          AS CHARACTER    XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'name'         */
 /*         FIELD sheet_id      AS INTEGER      XML-NODE-TYPE 'ATTRIBUTE'   XML-NODE-NAME 'localSheetId' */
@@ -869,7 +869,7 @@ DEFINE STREAM SOSCOMMAND.
          IF LOGICAL(ttDefineNames.sheet_id) THEN
             hnSAXWriter:INSERT-ATTRIBUTE('localSheetId', STRING(ttDefineNames.sheet_id)).
 
-         IF ttDefineNames.hidden THEN 
+         IF ttDefineNames.hidden THEN
             hnSAXWriter:INSERT-ATTRIBUTE('hidden', '1').
 
     END METHOD.
@@ -891,8 +891,8 @@ DEFINE STREAM SOSCOMMAND.
 
     METHOD PRIVATE VOID _prepare_tables():
     END METHOD.
-    
-    
+
+
 
 END CLASS.
 

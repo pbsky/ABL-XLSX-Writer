@@ -16,37 +16,37 @@ USING ABL-XLSX-Writer.ABL-XLSX-Writer.writer.*.
 USING Progress.Json.ObjectModel.*.
 
 &SCOPED-DEFINE da_EpocDate DATE(1,1,1900)
-&SCOPED-DEFINE ximillisecondsInDay   0x5265C00 
+&SCOPED-DEFINE ximillisecondsInDay   0x5265C00
 
 CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
-    
+
    DEFINE PRIVATE PROPERTY worksheetname             AS CHARACTER GET. SET.
    DEFINE PUBLIC  PROPERTY optimization              AS LOGICAL INITIAL TRUE  GET. SET.
-    
-   DEFINE PUBLIC  PROPERTY SharedStringTable        AS CLASS SharedStringTable GET. SET. /** Object set by the workbook.cls **/
-   DEFINE PRIVATE PROPERTY Utility                  AS CLASS Utility           GET. SET. 
-   DEFINE PRIVATE PROPERTY Workbook                 AS CLASS Workbook          GET. SET. 
 
-   DEFINE PRIVATE PROPERTY protect_options           AS CLASS JsonObject        GET. SET. 
-      
+   DEFINE PUBLIC  PROPERTY SharedStringTable        AS CLASS SharedStringTable GET. SET. /** Object set by the workbook.cls **/
+   DEFINE PRIVATE PROPERTY Utility                  AS CLASS Utility           GET. SET.
+   DEFINE PRIVATE PROPERTY Workbook                 AS CLASS Workbook          GET. SET.
+
+   DEFINE PRIVATE PROPERTY protect_options           AS CLASS JsonObject        GET. SET.
+
    DEFINE PRIVATE PROPERTY dim_rowmin               AS INTEGER INITIAL ? GET. SET.
-   DEFINE PRIVATE PROPERTY dim_colmin               AS INTEGER INITIAL ? GET. SET. 
-   DEFINE PRIVATE PROPERTY dim_rowmax               AS INTEGER GET. SET. 
-   DEFINE PRIVATE PROPERTY dim_colmax               AS INTEGER GET. SET. 
+   DEFINE PRIVATE PROPERTY dim_colmin               AS INTEGER INITIAL ? GET. SET.
+   DEFINE PRIVATE PROPERTY dim_rowmax               AS INTEGER GET. SET.
+   DEFINE PRIVATE PROPERTY dim_colmax               AS INTEGER GET. SET.
    DEFINE PRIVATE PROPERTY span                     AS CHARACTER GET. SET.
 
-   DEFINE PUBLIC PROPERTY hidden                    AS LOGICAL NO-UNDO  GET. PRIVATE SET. 
-   
-   
+   DEFINE PUBLIC PROPERTY hidden                    AS LOGICAL NO-UNDO  GET. PRIVATE SET.
+
+
     /** View Attributes **/
-    DEFINE PUBLIC PROPERTY showGridLines            AS LOGICAL NO-UNDO  GET. PRIVATE SET. 
+    DEFINE PUBLIC PROPERTY showGridLines            AS LOGICAL NO-UNDO  GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY show_zeros               AS LOGICAL NO-UNDO  GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY is_right_to_left         AS LOGICAL NO-UNDO  GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY selected                 AS LOGICAL NO-UNDO  GET. SET.
     DEFINE PUBLIC PROPERTY outline_on               AS LOGICAL NO-UNDO  GET. PRIVATE SET.
-    DEFINE PUBLIC PROPERTY page_view                AS LOGICAL NO-UNDO  GET. PRIVATE SET.    
-    DEFINE PUBLIC PROPERTY zoom                     AS INTEGER NO-UNDO  GET. PRIVATE SET.    
-    DEFINE PUBLIC PROPERTY zoom_scale_normal        AS LOGICAL NO-UNDO  GET. PRIVATE SET.    
+    DEFINE PUBLIC PROPERTY page_view                AS LOGICAL NO-UNDO  GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY zoom                     AS INTEGER NO-UNDO  GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY zoom_scale_normal        AS LOGICAL NO-UNDO  GET. PRIVATE SET.
 
     /** sheetFormatPr Attributes **/
     DEFINE PUBLIC PROPERTY default_row_height       AS INTEGER INITIAL 15     NO-UNDO GET. PRIVATE SET.
@@ -55,55 +55,55 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     DEFINE PUBLIC PROPERTY outline_col_level        AS INTEGER INITIAL 0      NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY excel_version            AS INTEGER INITIAL 2007   NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY tab_colour               AS CHARACTER              NO-UNDO GET. PRIVATE SET.
-    
+
     /** pageSetup Attributes **/
     DEFINE PUBLIC PROPERTY paper_size               AS INTEGER   NO-UNDO                   GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY BlackAndWhite            AS LOGICAL   NO-UNDO                   GET. PRIVATE SET.
-    
+
     DEFINE PUBLIC PROPERTY print_scale              AS INTEGER   NO-UNDO INITIAL 100        GET. SET.
     DEFINE PUBLIC PROPERTY orientation              AS CHARACTER NO-UNDO INITIAL 'portrait' GET. SET.
-    DEFINE PUBLIC PROPERTY page_setup_changed       AS LOGICAL   NO-UNDO  GET. PRIVATE SET.    
-    DEFINE PUBLIC PROPERTY print_options_changed    AS LOGICAL   NO-UNDO  GET. PRIVATE SET.  
-    
-    DEFINE PUBLIC PROPERTY margin_left              AS DECIMAL NO-UNDO GET. PRIVATE SET.  
-    DEFINE PUBLIC PROPERTY margin_right             AS DECIMAL NO-UNDO GET. PRIVATE SET.  
+    DEFINE PUBLIC PROPERTY page_setup_changed       AS LOGICAL   NO-UNDO  GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY print_options_changed    AS LOGICAL   NO-UNDO  GET. PRIVATE SET.
+
+    DEFINE PUBLIC PROPERTY margin_left              AS DECIMAL NO-UNDO GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY margin_right             AS DECIMAL NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY margin_top               AS DECIMAL NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY margin_bottom            AS DECIMAL NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY margin_footer            AS DECIMAL NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY margin_header            AS DECIMAL NO-UNDO GET. PRIVATE SET.
 
-    DEFINE PUBLIC PROPERTY vcenter                  AS LOGICAL   NO-UNDO GET. PRIVATE SET.      
-    DEFINE PUBLIC PROPERTY hcenter                  AS LOGICAL   NO-UNDO GET. PRIVATE SET.      
-    
+    DEFINE PUBLIC PROPERTY vcenter                  AS LOGICAL   NO-UNDO GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY hcenter                  AS LOGICAL   NO-UNDO GET. PRIVATE SET.
+
     DEFINE PUBLIC PROPERTY header_footer_changed    AS LOGICAL   NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY print_headers            AS LOGICAL   NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY header                   AS CHARACTER NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY footer                   AS CHARACTER NO-UNDO GET. PRIVATE SET.
-    
+
     DEFINE PUBLIC PROPERTY print_gridlines          AS LOGICAL   NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY screen_gridlines         AS LOGICAL   NO-UNDO GET. PRIVATE SET.
-    
-    
-    
+
+
+
 
     DEFINE PRIVATE TEMP-TABLE ttCols NO-UNDO SERIALIZE-NAME 'cols'
         FIELD min           AS INTEGER      XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'min'
         FIELD max           AS INTEGER      XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'max'
         FIELD width         AS DECIMAL      XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'width'
-        FIELD objformat     AS CLASS Progress.Lang.OBJECT 
+        FIELD objformat     AS CLASS Progress.Lang.OBJECT
         INDEX idxCols is PRIMARY UNIQUE
             min
             max.
 
     DEFINE TEMP-TABLE ttMergeCells NO-UNDO SERIALIZE-NAME 'mergeCells'
         FIELD first_row     AS INTEGER      XML-NODE-TYPE 'HIDDEN'
-        FIELD first_col     AS INTEGER      XML-NODE-TYPE 'HIDDEN'    
+        FIELD first_col     AS INTEGER      XML-NODE-TYPE 'HIDDEN'
         FIELD last_row      AS INTEGER      XML-NODE-TYPE 'HIDDEN'
         FIELD last_col      AS INTEGER      XML-NODE-TYPE 'HIDDEN'
         FIELD ref           AS CHARACTER    XML-NODE-TYPE 'ATTRIBUTE' XML-NODE-NAME 'ref'.
 
 
-    DEFINE PRIVATE TEMP-TABLE ttSheetDataRow NO-UNDO 
+    DEFINE PRIVATE TEMP-TABLE ttSheetDataRow NO-UNDO
         FIELD CellRow       AS INTEGER
         FIELD xf_index      AS CHARACTER
         FIELD cell_format   AS CHARACTER
@@ -120,13 +120,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
       FIELD Cell_Value      AS CHARACTER
       FIELD DATATYPE        AS CHARACTER    INITIAL 'INTEGER'
       FIELD sst             AS INTEGER      INITIAL ?
-      FIELD objformat       AS CLASS Progress.Lang.OBJECT 
+      FIELD objformat       AS CLASS Progress.Lang.OBJECT
       INDEX idxCellRowCol IS PRIMARY UNIQUE
             CellRow
             CellCol.
 
      DESTRUCTOR Worksheet():
-        
+
         DEFINE VARIABLE obFORMAT AS CLASS Format.
 
         FOR EACH ttSheetData:
@@ -147,19 +147,19 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         EMPTY TEMP-TABLE ttCols.
 
         IF VALID-OBJECT( THIS-OBJECT:Utility ) THEN
-            DELETE OBJECT THIS-OBJECT:Utility. 
+            DELETE OBJECT THIS-OBJECT:Utility.
 
-    END DESTRUCTOR. 
-    
+    END DESTRUCTOR.
+
    CONSTRUCTOR Worksheet(INPUT obj_Workbook     AS CLASS Workbook,
                          INPUT pchWorkSheetName AS CHARACTER):
-        THIS-OBJECT:Workbook      = obj_Workbook.  
+        THIS-OBJECT:Workbook      = obj_Workbook.
         THIS-OBJECT:worksheetname = pchWorkSheetName.
 
         THIS-OBJECT:Utility       = NEW Utility().
 
         THIS-OBJECT:zoom                    = 100. /** Default the zoom to 100% **/
-        
+
         THIS-OBJECT:optimization            = FALSE.
 
         THIS-OBJECT:default_row_height      = 15.
@@ -194,7 +194,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         THIS-OBJECT:margin_footer           = .3.
 
    END CONSTRUCTOR.
-    
+
    METHOD PRIVATE VOID _write (INPUT in_Row     AS INTEGER,
                                INPUT in_Col     AS INTEGER,
                                INPUT chVALUE    AS CHARACTER,
@@ -210,9 +210,9 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF NOT AVAILABLE ttSheetDataRow THEN
             CREATE ttSheetDataRow.
 
-        ASSIGN 
+        ASSIGN
             ttSheetDataRow.CellRow = in_Row.
-        
+
         IF VALID-OBJECT(Obj_Format) THEN
         DO:
             IF chDataType EQ 'DATETIME' AND Obj_Format:num_format EQ '0' THEN
@@ -220,17 +220,17 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
             IF chDataType EQ 'DATE'     AND Obj_Format:num_format EQ '0' THEN
                 Obj_Format:set_num_Format(INPUT 'd mmmm yyyy').
-            
+
             IF chDataType EQ 'DECIMAL' AND Obj_Format:num_format EQ '0' THEN
                 Obj_Format:set_num_Format(INPUT '#,##0.00'). /** Option Number 2**/
-            
+
             IF chDataType EQ 'INTEGER' AND Obj_Format:num_format EQ '0' THEN
                 Obj_Format:set_num_Format(INPUT '#,##0').    /** Option Number 3**/
 
             IF chDataType EQ 'CHARACTER' AND Obj_Format:num_format EQ '0' THEN
                 Obj_Format:set_num_Format(INPUT 'General').    /** Option Number 0**/
 
-        END.            
+        END.
 
         FIND ttSheetData
             WHERE ttSheetData.CellRow EQ in_Row
@@ -241,8 +241,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         DO:
             CREATE ttSheetData.
 
-            ASSIGN 
-                ttSheetData.CellRow   = in_Row   
+            ASSIGN
+                ttSheetData.CellRow   = in_Row
                 ttSheetData.CellCol   = in_Col.
 
             IF VALID-OBJECT(Obj_Format) THEN
@@ -282,7 +282,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         obj_PasswordHasher = NEW PasswordHasher().
         pch_password = obj_PasswordHasher:_encode_password(pch_password).
         DELETE OBJECT obj_PasswordHasher.
-        
+
         obj_defaults = NEW JsonObject().
 
         /** Defaults **/
@@ -313,7 +313,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         END.
 
         obj_defaults:ADD('password', pch_password).
-        
+
         THIS-OBJECT:protect_options = obj_defaults.
     END METHOD.
 
@@ -340,9 +340,9 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID set_BlackAndWhite():
         THIS-OBJECT:BlackAndWhite = TRUE.
     END METHOD.
-    
+
     METHOD PUBLIC VOID set_paper(INPUT pc_paper_size AS CHARACTER):
-         
+
         CASE pc_paper_size:
             WHEN 'Letter' THEN
                 THIS-OBJECT:set_paper(INPUT 1).
@@ -356,7 +356,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                 THIS-OBJECT:set_paper(INPUT 5).
             WHEN 'Statement ' THEN
                 THIS-OBJECT:set_paper(INPUT 6).
-            WHEN 'Executive' THEN                
+            WHEN 'Executive' THEN
                 THIS-OBJECT:set_paper(INPUT 7).
             WHEN 'A3' THEN
                 THIS-OBJECT:set_paper(INPUT 8).
@@ -378,7 +378,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
     METHOD PUBLIC VOID set_paper(INPUT in_paper_size AS INTEGER ):
 
-         IF (in_paper_size GE 1 AND 
+         IF (in_paper_size GE 1 AND
              in_paper_size LE 68) THEN
          DO:
             THIS-OBJECT:paper_size         = in_paper_size.
@@ -386,7 +386,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
          END.
 
     END METHOD.
-    
+
     METHOD PUBLIC VOID center_horizontally():
         THIS-OBJECT:hcenter               = TRUE.
         THIS-OBJECT:print_options_changed = TRUE.
@@ -398,7 +398,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     END METHOD.
 
     METHOD PUBLIC VOID set_margins (INPUT in_left   AS DECIMAL,
-                                    INPUT in_Right  AS DECIMAL, 
+                                    INPUT in_Right  AS DECIMAL,
                                     INPUT in_top    AS DECIMAL,
                                     INPUT in_Bottom AS DECIMAL):
 
@@ -407,10 +407,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         ASSIGN  in_Right  = 0.75 WHEN (NOT LOGICAL(in_Right)).
         ASSIGN  in_top    = 0.75 WHEN (NOT LOGICAL(in_top)).
         ASSIGN  in_bottom = 0.75 WHEN (NOT LOGICAL(in_bottom)).
-        
+
         THIS-OBJECT:margin_left   = in_left.
         THIS-OBJECT:margin_right  = in_Right.
-        THIS-OBJECT:margin_top    = in_top.    
+        THIS-OBJECT:margin_top    = in_top.
         THIS-OBJECT:margin_bottom = in_Bottom.
 
     END METHOD.
@@ -420,12 +420,12 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
         IF LENGTH(pch_Headers) GT 255 THEN
         DO:
-            MESSAGE 
+            MESSAGE
                 'Header string must be less than 255 characters'
                 VIEW-AS ALERT-BOX WARNING.
             RETURN.
         END.
-            
+
 
         ASSIGN in_Margin = 0.3 WHEN (in_Margin EQ ?).
 
@@ -439,22 +439,22 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
         IF LENGTH(pch_footer) GT 255 THEN
         DO:
-            MESSAGE 
+            MESSAGE
                 'Footer string must be less than 255 characters'
                 VIEW-AS ALERT-BOX WARNING.
             RETURN.
         END.
-            
+
         ASSIGN in_Margin = 0.3 WHEN (in_Margin EQ ?).
 
         THIS-OBJECT:footer                = pch_footer.
         THIS-OBJECT:margin_footer         = in_Margin.
         THIS-OBJECT:header_footer_changed = TRUE.
     END METHOD.
-    
+
 
     METHOD PUBLIC VOID hide_gridlines(INPUT pin_Option AS INTEGER):
-        
+
         CASE pin_Option:
             WHEN 0 THEN
             DO:
@@ -477,8 +477,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     END METHOD.
 
 
-        
-    
+
+
    /* Merge a range of cells. */
    METHOD PUBLIC VOID merge_range(INPUT in_first_row  AS INTEGER,
                                   INPUT in_first_col  AS INTEGER,
@@ -487,11 +487,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
         FIND FIRST ttMergeCells
             WHERE (ttMergeCells.first_row LE in_first_row AND
-                   ttMergeCells.last_row  GE in_first_row AND  
+                   ttMergeCells.last_row  GE in_first_row AND
                    ttMergeCells.first_col LE in_first_col AND
-                   ttMergeCells.last_col  GE in_first_col) OR 
+                   ttMergeCells.last_col  GE in_first_col) OR
                   (ttMergeCells.first_row LE in_last_row AND
-                   ttMergeCells.last_row  GE in_last_row AND  
+                   ttMergeCells.last_row  GE in_last_row AND
                    ttMergeCells.first_col LE in_last_col AND
                    ttMergeCells.last_col  GE in_last_col)
                 NO-ERROR.
@@ -505,10 +505,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         CREATE ttMergeCells.
 
         ASSIGN
-            ttMergeCells.first_row = in_first_row 
-            ttMergeCells.first_col = in_first_col 
-            ttMergeCells.last_row  = in_last_row  
-            ttMergeCells.last_col  = in_last_col.  
+            ttMergeCells.first_row = in_first_row
+            ttMergeCells.first_col = in_first_col
+            ttMergeCells.last_row  = in_last_row
+            ttMergeCells.last_col  = in_last_col.
 
         /** Excel Cell Notation 'A1:B2' **/
         ASSIGN ttMergeCells.ref = SUBSTITUTE('&1:&2',
@@ -525,11 +525,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                                  INPUT in_Last_Col   AS INTEGER,
                                  INPUT de_Witdh      AS DECIMAL):
 
-        DEFINE VARIABLE ob_Col_Format AS CLASS FORMAT.
+        DEFINE VARIABLE ob_Col_Format AS CLASS Format.
         ob_Col_Format = THIS-OBJECT:Workbook:add_Format().
 
-        THIS-OBJECT:set_column(INPUT in_First_Col,  
-                               INPUT in_Last_Col,  
+        THIS-OBJECT:set_column(INPUT in_First_Col,
+                               INPUT in_Last_Col,
                                INPUT de_Witdh,
                                INPUT ob_Col_Format).
 
@@ -538,7 +538,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
    METHOD PUBLIC VOID set_column(INPUT in_First_Col  AS INTEGER,
                                  INPUT in_Last_Col   AS INTEGER,
                                  INPUT de_Witdh      AS DECIMAL,
-                                 INPUT ob_Col_Format AS CLASS FORMAT):
+                                 INPUT ob_Col_Format AS CLASS Format):
 
         DEFINE VARIABLE First_Col AS INTEGER   NO-UNDO.
         DEFINE VARIABLE Last_Col  AS INTEGER   NO-UNDO.
@@ -553,16 +553,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 /*             max.                                                      */
 
         ASSIGN
-            First_Col = MINIMUM(1,in_First_Col) 
-            Last_Col  = MAXIMUM(1,in_Last_Col).  
+            First_Col = MINIMUM(1,in_First_Col)
+            Last_Col  = MAXIMUM(1,in_Last_Col).
 
         /** Transpose values arround **/
         IF First_Col GT Last_Col THEN
             ASSIGN
-                in_First_Col = Last_Col 
-                in_Last_Col  = First_Col. 
+                in_First_Col = Last_Col
+                in_Last_Col  = First_Col.
 
-        FIND ttCols 
+        FIND ttCols
             WHERE ttCols.min EQ in_First_Col
             AND   ttCols.max EQ in_Last_Col
             NO-ERROR.
@@ -570,7 +570,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF NOT AVAILABLE ttCols THEN
         DO:
             CREATE ttCols.
-            ASSIGN 
+            ASSIGN
                 ttCols.min = in_First_Col
                 ttCols.max = in_Last_Col.
         END.
@@ -593,11 +593,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            (in_Col GT 16384) THEN
             RETURN.
 
-        DEFINE VARIABLE obj_Format AS CLASS FORMAT.
-        
+        DEFINE VARIABLE obj_Format AS CLASS Format.
+
         obj_Format = THIS-OBJECT:Workbook:add_Format().
 
-        THIS-OBJECT:write(INPUT in_Row, 
+        THIS-OBJECT:write(INPUT in_Row,
                           INPUT in_Col,
                           INPUT lgVALUE, /* 1=TRUE, 0,FALSE*/
                           INPUT obj_Format).
@@ -607,13 +607,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row     AS INTEGER,
                               INPUT in_Col     AS INTEGER,
                               INPUT lgVALUE    AS LOGICAL,
-                              INPUT obj_Format AS CLASS FORMAT):
+                              INPUT obj_Format AS CLASS Format):
 
         IF (in_Row GT 1048576) OR
            (in_Col GT 16384) THEN
             RETURN.
 
-        THIS-OBJECT:_write(INPUT in_Row, 
+        THIS-OBJECT:_write(INPUT in_Row,
                           INPUT in_Col,
                           INPUT STRING(lgVALUE,'1/0'), /* 1=TRUE, 0,FALSE*/
                           INPUT 'LOGICAL',
@@ -628,48 +628,48 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF (in_Row GT 1048576) OR
             (in_Col GT 16384) THEN
             RETURN.
-        
-        DEFINE VARIABLE obj_Format AS CLASS FORMAT.
-        
+
+        DEFINE VARIABLE obj_Format AS CLASS Format.
+
         obj_Format = THIS-OBJECT:Workbook:add_Format().
-        
+
         THIS-OBJECT:write(INPUT in_Row,
                           INPUT in_Col,
                           INPUT chVALUE,
                           INPUT obj_Format).
     END METHOD.
-    
+
     /** Write CHARACTER without format object **/
     METHOD PUBLIC VOID write (INPUT in_Row      AS INTEGER,
                               INPUT in_Col      AS INTEGER,
                               INPUT chVALUE     AS CHARACTER,
-                              INPUT obj_Format  AS CLASS FORMAT):
+                              INPUT obj_Format  AS CLASS Format):
 
         IF (in_Row GT 1048576) OR
            (in_Col GT 16384) THEN
             RETURN.
-        
+
         /** Test the expression of the value to see if its a formula. **/
         IF chVALUE BEGINS '=' THEN
         DO:
 
             chVALUE = REPLACE(chVALUE,'=','').
 
-            THIS-OBJECT:_write(INPUT in_Row, 
+            THIS-OBJECT:_write(INPUT in_Row,
                                INPUT in_Col,
                                INPUT chVALUE,
                                INPUT 'FORMULA':U,
                                INPUT obj_Format).
         END.
         ELSE
-            THIS-OBJECT:_write(INPUT in_Row, 
+            THIS-OBJECT:_write(INPUT in_Row,
                                INPUT in_Col,
                                INPUT chVALUE,
                                INPUT 'CHARACTER',
                                INPUT obj_Format).
 
     END METHOD.
-    
+
     /** Write integer without format object **/
     METHOD PUBLIC VOID write (INPUT in_Row      AS INTEGER,
                               INPUT in_Col      AS INTEGER,
@@ -680,11 +680,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            (in_Col GT 16384) THEN
             RETURN.
 
-        DEFINE VARIABLE obj_Format AS CLASS FORMAT.
+        DEFINE VARIABLE obj_Format AS CLASS Format.
 
         obj_Format = THIS-OBJECT:Workbook:add_Format().
-    
-        THIS-OBJECT:write(INPUT in_Row, 
+
+        THIS-OBJECT:write(INPUT in_Row,
                           INPUT in_Col,
                           INPUT inVALUE,
                           INPUT obj_Format).
@@ -694,13 +694,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row      AS INTEGER,
                               INPUT in_Col      AS INTEGER,
                               INPUT inVALUE     AS INTEGER,
-                              INPUT obj_Format  AS CLASS FORMAT):
+                              INPUT obj_Format  AS CLASS Format):
 
         IF (in_Row GT 1048576) OR
            (in_Col GT 16384) THEN
             RETURN.
-    
-        THIS-OBJECT:_write(INPUT in_Row, 
+
+        THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
                            INPUT STRING(inVALUE),
                            INPUT 'INTEGER',
@@ -716,10 +716,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            (in_Col GT 16384) THEN
             RETURN.
 
-        DEFINE VARIABLE obj_Format AS CLASS FORMAT.
+        DEFINE VARIABLE obj_Format AS CLASS Format.
         obj_Format = THIS-OBJECT:Workbook:add_Format().
 
-        THIS-OBJECT:_write (INPUT in_Row, 
+        THIS-OBJECT:_write (INPUT in_Row,
                             INPUT in_Col,
                             INPUT STRING(deVALUE),
                             INPUT 'DECIMAL',
@@ -731,13 +731,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row     AS INTEGER,
                               INPUT in_Col     AS INTEGER,
                               INPUT deVALUE    AS DECIMAL,
-                              INPUT obj_Format AS CLASS FORMAT):
+                              INPUT obj_Format AS CLASS Format):
 
         IF (in_Row GT 1048576) OR
            (in_Col GT 16384) THEN
             RETURN.
 
-        THIS-OBJECT:_write(INPUT in_Row, 
+        THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
                            INPUT STRING(deVALUE),
                            INPUT 'DECIMAL',
@@ -750,11 +750,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col   AS INTEGER,
                               INPUT daVALUE  AS DATE):
 
-        DEFINE VARIABLE obj_Format   AS CLASS FORMAT.
+        DEFINE VARIABLE obj_Format   AS CLASS Format.
 
         obj_Format = THIS-OBJECT:Workbook:add_Format().
 
-        THIS-OBJECT:write(INPUT in_Row, 
+        THIS-OBJECT:write(INPUT in_Row,
                            INPUT in_Col,
                            INPUT daVALUE ,
                            INPUT obj_Format).
@@ -765,29 +765,29 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row      AS INTEGER,
                               INPUT in_Col      AS INTEGER,
                               INPUT daVALUE     AS DATE,
-                              INPUT obj_Format   AS CLASS FORMAT):
+                              INPUT obj_Format   AS CLASS Format):
 
         DEFINE VARIABLE in_Interval AS INT64     NO-UNDO.
-        
+
         /** + 2 Include the Epoc date and the date passed. **/
         in_Interval = INTERVAL(daVALUE, {&da_EpocDate},'days') + 2.
 
-        THIS-OBJECT:_write(INPUT in_Row, 
+        THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
                            INPUT STRING(in_Interval),
                            INPUT 'DATE',
                            INPUT obj_Format).
     END METHOD.
-    
+
     /** Write DATETIME without format object **/
     METHOD PUBLIC VOID write (INPUT in_Row   AS INTEGER,
                               INPUT in_Col   AS INTEGER,
                               INPUT dt_Value AS DATETIME):
-        
+
         IF dt_Value EQ ? THEN
             RETURN.
 
-        DEFINE VARIABLE obj_Format AS CLASS FORMAT.
+        DEFINE VARIABLE obj_Format AS CLASS Format.
 
         obj_Format = THIS-OBJECT:Workbook:add_Format().
 
@@ -801,7 +801,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row    AS INTEGER,
                               INPUT in_Col    AS INTEGER,
                               INPUT dt_Value  AS DATETIME,
-                              INPUT obj_Format AS CLASS FORMAT):
+                              INPUT obj_Format AS CLASS Format):
 
         DEFINE VARIABLE in_Interval AS INT64     NO-UNDO.
         DEFINE VARIABLE deTime_Dec  AS DECIMAL   NO-UNDO.
@@ -817,7 +817,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         deTime_Dec  = MTIME(dt_Value) / {&ximillisecondsInDay}.
         ch_DateTime = STRING(in_Interval) + STRING(deTime_Dec).
 
-        THIS-OBJECT:_write(INPUT in_Row, 
+        THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
                            INPUT ch_DateTime,
                            INPUT 'DATETIME',
@@ -827,7 +827,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row   AS INTEGER,
                               INPUT in_Col   AS INTEGER,
                               INPUT tz_Value AS DATETIME-TZ):
-            
+
         DEFINE VARIABLE param_DateTime AS DATETIME        NO-UNDO.
 
         param_DateTime = DATETIME( DATE(tz_Value), MTIME(tz_Value) ).
@@ -842,22 +842,22 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     METHOD PUBLIC VOID write (INPUT in_Row      AS INTEGER,
                               INPUT in_Col      AS INTEGER,
                               INPUT tz_Value    AS DATETIME-TZ,
-                              INPUT obj_Format   AS CLASS FORMAT):
+                              INPUT obj_Format   AS CLASS Format):
 
         DEFINE VARIABLE param_DateTime AS DATETIME        NO-UNDO.
-    
+
         param_DateTime = DATETIME( DATE(tz_Value), MTIME(tz_Value) ).
-    
+
         /** Call the method above...**/
         THIS-OBJECT:write (INPUT in_Row,
                            INPUT in_Col,
                            INPUT param_DateTime,
                            INPUT obj_Format).
     END.
-    
+
     METHOD PUBLIC CHARACTER get_name():
-        
-        /** 
+
+        /**
         Retrieve the worksheet name.
         **/
 
@@ -865,8 +865,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     END METHOD.
 
     METHOD PUBLIC VOID activate():
-        
-        /** 
+
+        /**
         Retrieve the worksheet name.
         **/
 
@@ -881,12 +881,12 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     END METHOD.
 
 
-    METHOD PUBLIC VOID write_temp_table(INPUT in_row        AS INTEGER, 
+    METHOD PUBLIC VOID write_temp_table(INPUT in_row        AS INTEGER,
                                         INPUT in_col        AS INTEGER,
                                         INPUT hn_temptable  AS HANDLE).
 
             /**
-            PUBLIC METHOD TO take the handle a converting it into excell Fields. 
+            PUBLIC METHOD TO take the handle a converting it into excell Fields.
             */
 
             IF NOT VALID-HANDLE(hn_temptable) OR
@@ -899,7 +899,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             DEFINE VARIABLE in_Field_Loop   AS INTEGER     NO-UNDO.
             DEFINE VARIABLE ch_field_value  AS CHARACTER   NO-UNDO.
 
-            DEFINE VARIABLE obj_ColumnFormat      AS CLASS FORMAT.
+            DEFINE VARIABLE obj_ColumnFormat      AS CLASS Format.
 
             obj_ColumnFormat = THIS-OBJECT:Workbook:add_Format().
 
@@ -912,7 +912,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             DEFINE VARIABLE INEXTENT AS INTEGER     NO-UNDO.
 
             DEFINE VARIABLE in_Column_Index AS INTEGER     NO-UNDO.
-            
+
             in_Column_Index = in_col.
 
             DO in_Field_Loop = 1 TO in_Num_fields :
@@ -925,20 +925,20 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 /*                     in_Column_Index = in_Column_Index + (in_Field_Loop - 1). */
 
                     DO INEXTENT = 1 TO hn_Buffer:BUFFER-FIELD( in_Field_Loop ):EXTENT:
-                                                
+
                         THIS-OBJECT:write(INPUT in_row,
                                           INPUT in_Column_Index,
                                           INPUT SUBSTITUTE('&1 [&2]', ch_field_value, INEXTENT ),
                                           INPUT obj_ColumnFormat).
 
-                        in_Column_Index = in_Column_Index + 1 .                        
+                        in_Column_Index = in_Column_Index + 1 .
 
                     END.
 
                     THIS-OBJECT:set_column( INPUT (in_Column_Index - INEXTENT) + 1,
                                             INPUT in_Column_Index - 1,
                                             INPUT MAXIMUM(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):WIDTH-CHARS , LENGTH(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):COLUMN-LABEL) + 5 )
-                                            ). 
+                                            ).
 
                 END.
                 ELSE
@@ -955,7 +955,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                     THIS-OBJECT:set_column( INPUT in_Column_Index,
                                             INPUT in_Column_Index,
                                             INPUT MAXIMUM(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):WIDTH-CHARS , LENGTH(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):COLUMN-LABEL) )
-                                            ). 
+                                            ).
                 END.
             END.
 
@@ -967,10 +967,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             IF hn_Query:IS-OPEN THEN
             DO:
 
-                DEFINE VARIABLE obj_Format          AS CLASS FORMAT.
-                DEFINE VARIABLE obj_DateTimeFormat  AS CLASS FORMAT.
-                DEFINE VARIABLE obj_DateFormat      AS CLASS FORMAT.
-        
+                DEFINE VARIABLE obj_Format          AS CLASS Format.
+                DEFINE VARIABLE obj_DateTimeFormat  AS CLASS Format.
+                DEFINE VARIABLE obj_DateFormat      AS CLASS Format.
+
                 obj_Format         = THIS-OBJECT:Workbook:add_Format().
                 obj_DateTimeFormat = THIS-OBJECT:Workbook:add_Format().
                 obj_DateFormat     = THIS-OBJECT:Workbook:add_Format().
@@ -981,18 +981,18 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                 obj_DateFormat:set_num_format('d mmm yyyy').
                 obj_DateFormat:set_bold().
 
-                
+
                 hn_Query:GET-FIRST() NO-ERROR.
                 REPEAT WHILE NOT hn_Query:QUERY-OFF-END:
 
-                    IF NOT hn_Buffer:AVAILABLE THEN 
+                    IF NOT hn_Buffer:AVAILABLE THEN
                         NEXT.
 
                     PROCESS EVENTS.
 
                     MESSAGE in_row in_Num_fields.
                     PAUSE 0.
-                    
+
                     INEXTENT = 0.
 
                     in_Column_Index = in_col.
@@ -1003,46 +1003,46 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
                     DO in_Field_Loop = 1 TO in_Num_fields:
 
-                        
+
                         /** Can't handle arrays yet..**/
-                    
+
 /*                         IF LOGICAL(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):EXTENT) THEN */
 /*                             NEXT.                                                       */
-                        
+
                         MESSAGE in_Field_Loop hn_Buffer:BUFFER-FIELD( in_Field_Loop ):DATA-TYPE.
 
                         DEFINE VARIABLE inSubSCRIPT AS INTEGER     NO-UNDO INITIAL 0.
 
                         /** IF THE BUFFER FIELD IS AN EXTENT THEN START THE SUBSCRIPT AT 1 (One).**/
                         IF LOGICAL(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):EXTENT) THEN
-                            inSubSCRIPT = 1. 
+                            inSubSCRIPT = 1.
 
                         DO INEXTENT = inSubSCRIPT TO (hn_Buffer:BUFFER-FIELD( in_Field_Loop ):EXTENT):
 
                             CASE hn_Buffer:BUFFER-FIELD( in_Field_Loop ):DATA-TYPE:
                                 WHEN 'INTEGER' THEN
-                                    THIS-OBJECT:write(INPUT in_row, 
-                                                      INPUT in_Column_Index, 
+                                    THIS-OBJECT:write(INPUT in_row,
+                                                      INPUT in_Column_Index,
                                                       INPUT INTEGER(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):BUFFER-VALUE(INEXTENT)),
                                                       INPUT obj_Format).
                                 WHEN 'DECIMAL' THEN
-                                    THIS-OBJECT:write(INPUT in_row, 
-                                                      INPUT in_Column_Index, 
+                                    THIS-OBJECT:write(INPUT in_row,
+                                                      INPUT in_Column_Index,
                                                       INPUT DECIMAL(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):BUFFER-VALUE(INEXTENT)),
                                                       INPUT obj_Format).
                                 WHEN 'DATE' THEN
-                                    THIS-OBJECT:write(INPUT in_row, 
-                                                      INPUT in_Column_Index, 
+                                    THIS-OBJECT:write(INPUT in_row,
+                                                      INPUT in_Column_Index,
                                                       INPUT DATE(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):BUFFER-VALUE(INEXTENT)),
                                                       INPUT obj_DateFormat).
                                 WHEN 'DATETIME' THEN
-                                    THIS-OBJECT:write(INPUT in_row, 
-                                                      INPUT in_Column_Index, 
+                                    THIS-OBJECT:write(INPUT in_row,
+                                                      INPUT in_Column_Index,
                                                       INPUT DATETIME( hn_Buffer:BUFFER-FIELD( in_Field_Loop ):BUFFER-VALUE(INEXTENT) ),
                                                       INPUT obj_DateTimeFormat).
                                 OTHERWISE
                                         THIS-OBJECT:write(INPUT in_row,
-                                                          INPUT in_Column_Index, 
+                                                          INPUT in_Column_Index,
                                                           INPUT TRIM(STRING(hn_Buffer:BUFFER-FIELD( in_Field_Loop ):STRING-VALUE(INEXTENT))),
                                                           INPUT obj_Format).
                             END CASE.
@@ -1080,14 +1080,14 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
 
    METHOD PRIVATE VOID _write_worksheet().
-    
+
     IF hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-ERROR THEN
         RETURN.
 
-    hnSAXWriter:START-ELEMENT('worksheet'). 
+    hnSAXWriter:START-ELEMENT('worksheet').
     hnSAXWriter:DECLARE-NAMESPACE('http://schemas.openxmlformats.org/spreadsheetml/2006/main').
     hnSAXWriter:DECLARE-NAMESPACE('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r').
-    
+
     /** Add some extra attributes for Excel 2010. Mainly for sparklines.**/
     IF THIS-OBJECT:excel_version EQ 2010 THEN
     DO:
@@ -1095,8 +1095,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         hnSAXWriter:DECLARE-NAMESPACE('http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac','x14ac').
         hnSAXWriter:INSERT-ATTRIBUTE('mc:Ignorable','x14ac').
     END.
-    
-    
+
+
     THIS-OBJECT:_write_sheet_pr().
     THIS-OBJECT:_write_dimension().
     THIS-OBJECT:_write_sheet_views().
@@ -1104,10 +1104,10 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     THIS-OBJECT:_write_cols().
 
     IF THIS-OBJECT:optimization THEN
-        THIS-OBJECT:_write_optimized_sheet_data().        
+        THIS-OBJECT:_write_optimized_sheet_data().
     ELSE
         THIS-OBJECT:_write_sheet_data().
-        
+
     THIS-OBJECT:_write_sheet_protection().
     THIS-OBJECT:_write_auto_filter().
     THIS-OBJECT:_write_merge_cells().
@@ -1138,20 +1138,20 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 /*     # Write the extLst and sparklines. */
     THIS-OBJECT:_write_ext_sparklines().
 
-    hnSAXWriter:END-ELEMENT('worksheet').   
+    hnSAXWriter:END-ELEMENT('worksheet').
    END METHOD.
 
    METHOD PRIVATE VOID _write_sheet_data():
 
         IF NOT TEMP-TABLE ttSheetDataRow:HAS-RECORDS THEN
-           hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetData').      
+           hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetData').
         ELSE
         DO:
-            hnSAXWriter:START-ELEMENT('sheetData').  
+            hnSAXWriter:START-ELEMENT('sheetData').
 
             THIS-OBJECT:_write_rows().
 
-            hnSAXWriter:END-ELEMENT('sheetData').  
+            hnSAXWriter:END-ELEMENT('sheetData').
         END.
    END METHOD.
 
@@ -1172,20 +1172,20 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             FOR EACH ttSheetData
                 WHERE ttSheetData.CellRow EQ ttSheetDataRow.CellRow
                     BY ttSheetData.CellCol:
-            
+
                 hnSAXWriter:START-ELEMENT('c').
                 hnSAXWriter:INSERT-ATTRIBUTE('r', THIS-OBJECT:Utility:xl_rowcol_to_cell(ttSheetData.CellRow, ttSheetData.CellCol)).
 
                 obj_Format_Instant = CAST(ttSheetData.ObjFormat , format ).
-                
+
                 IF VALID-OBJECT(obj_Format_Instant) THEN
                 DO:
                     in_xf_Index = obj_Format_Instant:_get_xf_index().
 
-                    IF obj_Format_Instant:_get_xf_index() NE 0 THEN 
+                    IF obj_Format_Instant:_get_xf_index() NE 0 THEN
                         hnSAXWriter:INSERT-ATTRIBUTE('s', STRING( in_xf_Index ) ).
                 END.
-                    
+
                 /** http://officeopenxml.com/SScontentOverview.php **/
 
 /*                 Valid value Description   */
@@ -1199,7 +1199,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                 CASE ttSheetData.DataType:
                     WHEN 'CHARACTER' THEN
                         hnSAXWriter:INSERT-ATTRIBUTE('t', 's'). /** s = string lookup table..**/
-                    WHEN 'INTEGER' OR 
+                    WHEN 'INTEGER' OR
                     WHEN 'DECIMAL' THEN
                         hnSAXWriter:INSERT-ATTRIBUTE('t', 'n'). /** n = number**/
                     WHEN 'LOGICAL' THEN
@@ -1214,7 +1214,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                     hnSAXWriter:WRITE-DATA-ELEMENT('f', ttSheetData.Cell_Value).
                 ELSE
                 DO:
-                    
+
                     IF ttSheetData.Cell_Value NE '' AND ttSheetData.Cell_Value NE ? THEN
                         hnSAXWriter:WRITE-DATA-ELEMENT('v', ttSheetData.Cell_Value ).
                     ELSE IF ttSheetData.Cell_Value EQ ? THEN
@@ -1240,17 +1240,17 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             EACH ttSheetData
                 WHERE ttSheetData.CellRow EQ ttSheetDataRow.CellRow
                 BY ttSheetData.CellCol:
-                    
+
                 IF inMin_Col EQ ? THEN
                     inMin_Col = ttSheetData.CellCol.
-                
+
                 IF inMaxCol EQ ? THEN
                     inMaxCol = ttSheetData.CellCol.
 
                 INMin_Col = MINIMUM(INMin_Col, ttSheetData.CellCol).
                 inMaxCol  = MAXIMUM(inMaxCol, ttSheetData.CellCol).
 
-            
+
         END.
 
         THIS-OBJECT:span = SUBSTITUTE("&1:&2",
@@ -1289,7 +1289,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF THIS-OBJECT:dim_rowmin EQ ? AND
            THIS-OBJECT:dim_colmin EQ ? THEN
             ref = "A1".
-        ELSE 
+        ELSE
         IF THIS-OBJECT:dim_rowmin EQ 0 AND THIS-OBJECT:dim_colmin GT 0 THEN
         DO:
 
@@ -1301,9 +1301,9 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                                  THIS-OBJECT:Utility:xl_rowcol_to_cell(0, THIS-OBJECT:dim_colmin),
                                  THIS-OBJECT:Utility:xl_rowcol_to_cell(0, THIS-OBJECT:dim_colmax)
                                  ).
-            
+
         END.
-        ELSE 
+        ELSE
         IF (THIS-OBJECT:dim_rowmin EQ THIS-OBJECT:dim_rowmax AND
             THIS-OBJECT:dim_colmin EQ THIS-OBJECT:dim_colmax) THEN
             ref = THIS-OBJECT:Utility:xl_rowcol_to_cell(THIS-OBJECT:dim_rowmin, THIS-OBJECT:dim_colmin).
@@ -1313,51 +1313,51 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                              THIS-OBJECT:Utility:xl_rowcol_to_cell(THIS-OBJECT:dim_rowmax, THIS-OBJECT:dim_colmax)
                              ).
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('dimension').       
-        hnSAXWriter:INSERT-ATTRIBUTE('ref', ref ).       
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('dimension').
+        hnSAXWriter:INSERT-ATTRIBUTE('ref', ref ).
    END METHOD.
 
    METHOD PRIVATE VOID _write_sheet_views():
 
-        hnSAXWriter:START-ELEMENT('sheetViews'). 
+        hnSAXWriter:START-ELEMENT('sheetViews').
 
         THIS-OBJECT:_write_sheet_view().
 
-        hnSAXWriter:END-ELEMENT('sheetViews'). 
+        hnSAXWriter:END-ELEMENT('sheetViews').
    END METHOD.
 
     METHOD PRIVATE VOID _write_sheet_view():
-        
+
         /*self.panes or len(self.selections):*/
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetView':U).       
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetView':U).
 
         IF NOT THIS-OBJECT:showGridLines THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('showGridLines':U, '0' ). 
+            hnSAXWriter:INSERT-ATTRIBUTE('showGridLines':U, '0' ).
 
         IF NOT THIS-OBJECT:show_zeros THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('showZeros':U, '0' ). 
+            hnSAXWriter:INSERT-ATTRIBUTE('showZeros':U, '0' ).
 
         IF THIS-OBJECT:is_right_to_left THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('rightToLeft':U, '1' ). 
+            hnSAXWriter:INSERT-ATTRIBUTE('rightToLeft':U, '1' ).
 
         IF THIS-OBJECT:selected THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('tabSelected':U, '1' ).  
+            hnSAXWriter:INSERT-ATTRIBUTE('tabSelected':U, '1' ).
 
         IF NOT THIS-OBJECT:outline_on THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('showOutlineSymbols':U, '0' ).  
+            hnSAXWriter:INSERT-ATTRIBUTE('showOutlineSymbols':U, '0' ).
 
         IF THIS-OBJECT:page_view THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('view', 'pageLayout' ).  
+            hnSAXWriter:INSERT-ATTRIBUTE('view', 'pageLayout' ).
 
         IF THIS-OBJECT:zoom NE 100 THEN
         DO:
             IF NOT THIS-OBJECT:page_view THEN
             DO:
-                hnSAXWriter:INSERT-ATTRIBUTE('zoomScale':U, STRING(THIS-OBJECT:zoom) ). 
+                hnSAXWriter:INSERT-ATTRIBUTE('zoomScale':U, STRING(THIS-OBJECT:zoom) ).
 
                 IF THIS-OBJECT:zoom_scale_normal THEN
-                    hnSAXWriter:INSERT-ATTRIBUTE('zoomScaleNormal':U, STRING(THIS-OBJECT:zoom) ). 
+                    hnSAXWriter:INSERT-ATTRIBUTE('zoomScaleNormal':U, STRING(THIS-OBJECT:zoom) ).
             END.
         END.
 
@@ -1367,8 +1367,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
    METHOD PRIVATE VOID _write_sheet_format_pr():
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetFormatPr').   
-        
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetFormatPr').
+
         hnSAXWriter:INSERT-ATTRIBUTE('defaultRowHeight':U, STRING(THIS-OBJECT:default_row_height) ).
 
         IF THIS-OBJECT:default_row_height NE 15 THEN
@@ -1376,7 +1376,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
         IF THIS-OBJECT:default_row_zeroed THEN
             hnSAXWriter:INSERT-ATTRIBUTE('zeroHeight':U, '1' ).
-        
+
         IF LOGICAL(THIS-OBJECT:outline_row_level) THEN
             hnSAXWriter:INSERT-ATTRIBUTE('outlineLevelRow':U, STRING( THIS-OBJECT:outline_row_level) ).
 
@@ -1387,16 +1387,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
             hnSAXWriter:INSERT-ATTRIBUTE('x14ac:dyDescent':U, '0.25' ).
 
    END METHOD.
-   
+
     METHOD PRIVATE VOID _write_cols():
-        
+
         IF NOT TEMP-TABLE ttCols:HAS-RECORDS THEN
             RETURN.
 
-        hnSAXWriter:START-ELEMENT('cols').   
-        THIS-OBJECT:_write_col_info(). 
-        hnSAXWriter:END-ELEMENT('cols').   
-        
+        hnSAXWriter:START-ELEMENT('cols').
+        THIS-OBJECT:_write_col_info().
+        hnSAXWriter:END-ELEMENT('cols').
+
     END METHOD.
 
     METHOD PRIVATE VOID _write_col_info():
@@ -1404,21 +1404,21 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         DEFINE VARIABLE custom_width AS LOGICAL INITIAL FALSE NO-UNDO.
 
         FOR EACH ttCols:
-            
+
             IF ttCols.width EQ ? THEN
                 ASSIGN
                     ttCols.width = 8.43      /** 8.43 is the default..**/
-                    custom_width = FALSE.    
-            
-            hnSAXWriter:WRITE-EMPTY-ELEMENT('col').   
-        
+                    custom_width = FALSE.
+
+            hnSAXWriter:WRITE-EMPTY-ELEMENT('col').
+
             hnSAXWriter:INSERT-ATTRIBUTE('min':U, STRING( ttCols.min ) ).
             hnSAXWriter:INSERT-ATTRIBUTE('max':U, STRING( ttCols.max ) ).
             hnSAXWriter:INSERT-ATTRIBUTE('width':U, STRING( ttCols.width ) ).
-        
+
             IF ttCols.width NE 8.43 THEN
                 hnSAXWriter:INSERT-ATTRIBUTE('customWidth':U, '1' ).
-        
+
         END.
 
     END METHOD.
@@ -1426,13 +1426,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
    METHOD PRIVATE VOID _write_sheet_protection():
 
         DEFINE VARIABLE ob_options AS CLASS JSONOBJECT.
-   
+
         IF NOT VALID-OBJECT( THIS-OBJECT:protect_options ) THEN
             RETURN.
 
         ob_options = THIS-OBJECT:protect_options.
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetProtection').  
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetProtection').
 
         IF NOT ob_options:IsNull('password') THEN
             hnSAXWriter:INSERT-ATTRIBUTE('password', ob_options:GETCHARACTER('password') ).
@@ -1494,7 +1494,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
    END METHOD.
 
     METHOD PRIVATE VOID _write_merge_cells():
-        
+
         DEFINE VARIABLE hnttMergeCells  AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnMergeCell     AS HANDLE      NO-UNDO.
         DEFINE VARIABLE hnQuery         AS HANDLE      NO-UNDO.
@@ -1514,18 +1514,18 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF hnQuery:IS-OPEN THEN
         DO:
             hnQuery:GET-FIRST() NO-ERROR.
-    
-            hnSAXWriter:START-ELEMENT('mergeCells').   
+
+            hnSAXWriter:START-ELEMENT('mergeCells').
             hnSAXWriter:INSERT-ATTRIBUTE('count':U, STRING( hnQuery:NUM-RESULTS ) ).
-    
+
             REPEAT WHILE NOT hnQuery:QUERY-OFF-END:
-    
+
                 THIS-OBJECT:_write_merge_cell(INPUT hnMergeCell).
                 hnQuery:GET-NEXT() NO-ERROR.
             END.
-    
-            hnSAXWriter:END-ELEMENT('mergeCells').   
-    
+
+            hnSAXWriter:END-ELEMENT('mergeCells').
+
             hnQuery:QUERY-CLOSE().
         END.
 
@@ -1539,8 +1539,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            NOT hnBuffer:TYPE EQ 'BUFFER' THEN
            RETURN.
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('mergeCell').  
-        hnSAXWriter:INSERT-ATTRIBUTE('ref', STRING(hnBuffer::ref) ).   
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('mergeCell').
+        hnSAXWriter:INSERT-ATTRIBUTE('ref', STRING(hnBuffer::ref) ).
 
    END METHOD.
 
@@ -1558,7 +1558,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF NOT THIS-OBJECT:print_options_changed THEN
             RETURN.
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('printOptions'). 
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('printOptions').
 
 /*         # Set horizontal centering. */
         IF THIS-OBJECT:hcenter THEN
@@ -1575,19 +1575,19 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 /*         # Set printed gridlines. */
         IF THIS-OBJECT:print_gridlines THEN
             hnSAXWriter:INSERT-ATTRIBUTE('gridLines', '1').
-        
+
    END METHOD.
 
    METHOD PRIVATE VOID _write_page_margins():
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('pageMargins').   
-        hnSAXWriter:INSERT-ATTRIBUTE('left',    TRIM(STRING(THIS-OBJECT:margin_left, '>>9.99'))).   
-        hnSAXWriter:INSERT-ATTRIBUTE('right',   TRIM(STRING(THIS-OBJECT:margin_right, '>>9.99'))).   
-        hnSAXWriter:INSERT-ATTRIBUTE('top',     TRIM(STRING(THIS-OBJECT:margin_top, '>>9.99'))).  
-        hnSAXWriter:INSERT-ATTRIBUTE('bottom',  TRIM(STRING(THIS-OBJECT:margin_bottom, '>>9.99'))).   
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('pageMargins').
+        hnSAXWriter:INSERT-ATTRIBUTE('left',    TRIM(STRING(THIS-OBJECT:margin_left, '>>9.99'))).
+        hnSAXWriter:INSERT-ATTRIBUTE('right',   TRIM(STRING(THIS-OBJECT:margin_right, '>>9.99'))).
+        hnSAXWriter:INSERT-ATTRIBUTE('top',     TRIM(STRING(THIS-OBJECT:margin_top, '>>9.99'))).
+        hnSAXWriter:INSERT-ATTRIBUTE('bottom',  TRIM(STRING(THIS-OBJECT:margin_bottom, '>>9.99'))).
 
-        hnSAXWriter:INSERT-ATTRIBUTE('header',  TRIM(STRING(THIS-OBJECT:margin_header, '>>9.99'))).   
-        hnSAXWriter:INSERT-ATTRIBUTE('footer',  TRIM(STRING(THIS-OBJECT:margin_footer, '>>9.99'))).   
+        hnSAXWriter:INSERT-ATTRIBUTE('header',  TRIM(STRING(THIS-OBJECT:margin_header, '>>9.99'))).
+        hnSAXWriter:INSERT-ATTRIBUTE('footer',  TRIM(STRING(THIS-OBJECT:margin_footer, '>>9.99'))).
 
    END METHOD.
 
@@ -1596,16 +1596,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF NOT THIS-OBJECT:page_setup_changed THEN
             RETURN.
 
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('pageSetup').   
+        hnSAXWriter:WRITE-EMPTY-ELEMENT('pageSetup').
 
         IF LOGICAL(THIS-OBJECT:paper_size)  THEN
-            hnSAXWriter:INSERT-ATTRIBUTE('paper_size', STRING(THIS-OBJECT:paper_size) ).   
+            hnSAXWriter:INSERT-ATTRIBUTE('paper_size', STRING(THIS-OBJECT:paper_size) ).
 
         IF THIS-OBJECT:print_scale NE 100 THEN /** 100% **/
-            hnSAXWriter:INSERT-ATTRIBUTE('scale', STRING( THIS-OBJECT:print_scale ) ).   
-        
-        hnSAXWriter:INSERT-ATTRIBUTE('orientation', THIS-OBJECT:orientation ).   
-        
+            hnSAXWriter:INSERT-ATTRIBUTE('scale', STRING( THIS-OBJECT:print_scale ) ).
+
+        hnSAXWriter:INSERT-ATTRIBUTE('orientation', THIS-OBJECT:orientation ).
+
    END METHOD.
 
    METHOD PRIVATE VOID _write_header_footer():
@@ -1613,7 +1613,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF NOT THIS-OBJECT:header_footer_changed THEN
             RETURN.
 
-        hnSAXWriter:START-ELEMENT('headerFooter'). 
+        hnSAXWriter:START-ELEMENT('headerFooter').
 
         IF THIS-OBJECT:header NE '' THEN
             THIS-OBJECT:_write_odd_header().
@@ -1621,16 +1621,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF THIS-OBJECT:footer NE '' THEN
             THIS-OBJECT:_write_odd_footer().
 
-        hnSAXWriter:END-ELEMENT('headerFooter'). 
+        hnSAXWriter:END-ELEMENT('headerFooter').
 
    END METHOD.
 
     METHOD PRIVATE VOID _write_odd_header():
-        hnSAXWriter:WRITE-DATA-ELEMENT('oddHeader', THIS-OBJECT:header ).   
+        hnSAXWriter:WRITE-DATA-ELEMENT('oddHeader', THIS-OBJECT:header ).
     END METHOD.
 
     METHOD PRIVATE VOID _write_odd_footer():
-        hnSAXWriter:WRITE-DATA-ELEMENT('oddFooter', THIS-OBJECT:footer ).   
+        hnSAXWriter:WRITE-DATA-ELEMENT('oddFooter', THIS-OBJECT:footer ).
     END METHOD.
 
 
