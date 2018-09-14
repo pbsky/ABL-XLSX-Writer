@@ -649,8 +649,12 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            (in_Col GT 16384) THEN
             RETURN.
 
-        /** Test the expression of the value to see if its a formula. **/
-        IF chVALUE BEGINS '=' THEN
+        /** 1. Test the expression of the value to see if its a formula.
+            2. A PROGRESS index consists of one or more fields.  For an individual record,
+               the sum of the lengths of all fields in an index cannot be more than 1970.
+               (ttSharedStrings.SharedString is am Index Field)
+        **/
+        IF chVALUE BEGINS '=' or LENGTH(chVALUE) > 1800 THEN
         DO:
 
             chVALUE = REPLACE(chVALUE,'=','').
