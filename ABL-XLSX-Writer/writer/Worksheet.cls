@@ -29,10 +29,19 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
    DEFINE PRIVATE PROPERTY protect_options           AS CLASS JsonObject        GET. SET.
 
+   /** MS Excel limits **/
+   DEFINE PUBLIC  PROPERTY xls_rowmax               AS INTEGER INITIAL 1048576 GET. PRIVATE SET.
+   DEFINE PUBLIC  PROPERTY xls_colmax               AS INTEGER INITIAL 16384 GET. PRIVATE SET.
+   DEFINE PRIVATE PROPERTY xls_strmax               AS INTEGER INITIAL 32767 GET. SET.
+
    DEFINE PRIVATE PROPERTY dim_rowmin               AS INTEGER INITIAL ? GET. SET.
    DEFINE PRIVATE PROPERTY dim_colmin               AS INTEGER INITIAL ? GET. SET.
    DEFINE PRIVATE PROPERTY dim_rowmax               AS INTEGER GET. SET.
    DEFINE PRIVATE PROPERTY dim_colmax               AS INTEGER GET. SET.
+
+   /** Number of rows, columns in the input data, may exceed Excel limit **/
+   DEFINE PUBLIC  PROPERTY used_rowmax              AS INTEGER INITIAL 0 GET. PRIVATE SET.
+   DEFINE PUBLIC  PROPERTY used_colmax              AS INTEGER INITIAL 0 GET. PRIVATE SET.
    DEFINE PRIVATE PROPERTY span                     AS CHARACTER GET. SET.
 
    DEFINE PUBLIC PROPERTY hidden                    AS LOGICAL NO-UNDO  GET. PRIVATE SET.
@@ -83,6 +92,15 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     DEFINE PUBLIC PROPERTY print_gridlines          AS LOGICAL   NO-UNDO GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY screen_gridlines         AS LOGICAL   NO-UNDO GET. PRIVATE SET.
 
+    /** Progress ABL Limit Workaround
+        ABL limit: sum of the lengths of all fields in an index cannot be more than 1970.
+        Strings longer than abl_strindexmax are written as a value without a shared table
+          (ttSharedStrings.SharedString is an Index Field)
+    **/
+    DEFINE PUBLIC PROPERTY abl_strindexmax          AS INTEGER INIT 1800 NO-UNDO GET.
+    SET(pi_abl_strindexmax as int):
+      IF pi_abl_strindexmax GE 0 THEN abl_strindexmax = MIN(pi_abl_strindexmax, 1800).
+    END SET.
 
 
 
@@ -589,9 +607,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col  AS INTEGER,
                               INPUT lgVALUE AS LOGICAL):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
 
@@ -609,9 +625,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT lgVALUE    AS LOGICAL,
                               INPUT obj_Format AS CLASS Format):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                           INPUT in_Col,
@@ -625,8 +639,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col  AS INTEGER,
                               INPUT chVALUE AS CHARACTER):
 
-        IF (in_Row GT 1048576) OR
-            (in_Col GT 16384) THEN
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 or
+           LENGTH(chVALUE) GT xls_strmax THEN
             RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
@@ -645,16 +659,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT chVALUE     AS CHARACTER,
                               INPUT obj_Format  AS CLASS Format):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 OR
+           LENGTH(chVALUE) GT xls_strmax THEN
             RETURN.
 
-        /** 1. Test the expression of the value to see if its a formula.
-            2. A PROGRESS index consists of one or more fields.  For an individual record,
-               the sum of the lengths of all fields in an index cannot be more than 1970.
-               (ttSharedStrings.SharedString is am Index Field)
-        **/
-        IF chVALUE BEGINS '=' or LENGTH(chVALUE) > 1800 THEN
+        IF chVALUE BEGINS '=' or LENGTH(chVALUE, "RAW") GT abl_strindexmax THEN
         DO:
 
             chVALUE = REPLACE(chVALUE,'=','').
@@ -680,9 +689,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT inVALUE     AS INTEGER):
 
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
 
@@ -700,9 +707,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT inVALUE     AS INTEGER,
                               INPUT obj_Format  AS CLASS Format):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
@@ -716,9 +721,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col   AS INTEGER,
                               INPUT deVALUE  AS DECIMAL):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
         obj_Format = THIS-OBJECT:Workbook:add_Format().
@@ -737,9 +740,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT deVALUE    AS DECIMAL,
                               INPUT obj_Format AS CLASS Format):
 
-        IF (in_Row GT 1048576) OR
-           (in_Col GT 16384) THEN
-            RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
@@ -1654,6 +1655,20 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
    END METHOD.
 
    METHOD PRIVATE VOID _write_ext_sparklines():
+   END METHOD.
+
+   METHOD PRIVATE INTEGER _check_dimensions(INPUT in_Row  AS INTEGER,
+                                            INPUT in_Col  AS INTEGER):
+
+        if in_Row LE 0 OR in_Col LE 0 THEN RETURN -1.
+
+        used_rowmax = MAXIMUM(used_rowmax, in_Row).
+        used_colmax = MAXIMUM(used_colmax, in_Col).
+        IF (in_Row GT xls_rowmax) OR
+           (in_Col GT xls_colmax) THEN RETURN -1.
+
+        RETURN 0.
+
    END METHOD.
 
 END CLASS.
