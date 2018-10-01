@@ -607,7 +607,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col  AS INTEGER,
                               INPUT lgVALUE AS LOGICAL):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
 
@@ -625,7 +625,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT lgVALUE    AS LOGICAL,
                               INPUT obj_Format AS CLASS Format):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                           INPUT in_Col,
@@ -639,7 +639,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col  AS INTEGER,
                               INPUT chVALUE AS CHARACTER):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 or
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 OR
            LENGTH(chVALUE) GT xls_strmax THEN
             RETURN.
 
@@ -659,7 +659,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT chVALUE     AS CHARACTER,
                               INPUT obj_Format  AS CLASS Format):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 OR
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 OR
            LENGTH(chVALUE) GT xls_strmax THEN
             RETURN.
 
@@ -689,7 +689,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT inVALUE     AS INTEGER):
 
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
 
@@ -707,7 +707,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT inVALUE     AS INTEGER,
                               INPUT obj_Format  AS CLASS Format):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
@@ -721,7 +721,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT in_Col   AS INTEGER,
                               INPUT deVALUE  AS DECIMAL):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         DEFINE VARIABLE obj_Format AS CLASS Format.
         obj_Format = THIS-OBJECT:Workbook:add_Format().
@@ -740,7 +740,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                               INPUT deVALUE    AS DECIMAL,
                               INPUT obj_Format AS CLASS Format):
 
-        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LE 0 THEN RETURN.
+        IF THIS-OBJECT:_check_dimensions(INPUT in_Row, INPUT in_Col) LT 0 THEN RETURN.
 
         THIS-OBJECT:_write(INPUT in_Row,
                            INPUT in_Col,
