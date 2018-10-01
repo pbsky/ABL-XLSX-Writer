@@ -663,7 +663,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
            LENGTH(chVALUE) GT xls_strmax THEN
             RETURN.
 
-        IF chVALUE BEGINS '=' or LENGTH(chVALUE, "RAW") GT abl_strindexmax THEN
+        IF chVALUE BEGINS '=' THEN
         DO:
 
             chVALUE = REPLACE(chVALUE,'=','').
@@ -674,6 +674,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                                INPUT 'FORMULA':U,
                                INPUT obj_Format).
         END.
+        ELSE IF LENGTH(chVALUE, "RAW") GT abl_strindexmax
+        THEN
+            THIS-OBJECT:_write(INPUT in_Row,
+                               INPUT in_Col,
+                               INPUT chVALUE,
+                               INPUT 'RICHTEXT':U,
+                               INPUT obj_Format).
         ELSE
             THIS-OBJECT:_write(INPUT in_Row,
                                INPUT in_Col,
@@ -1211,12 +1218,20 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                         hnSAXWriter:INSERT-ATTRIBUTE('t', 'b'). /** b = boolian **/
                     WHEN 'FORMULA' THEN
                         hnSAXWriter:INSERT-ATTRIBUTE('t', 'str'). /** str = inline string **/
+                    WHEN 'RICHTEXT' THEN
+                        hnSAXWriter:INSERT-ATTRIBUTE('t', 'inlineStr'). /** str = inline string **/
                     OTHERWISE
                         hnSAXWriter:INSERT-ATTRIBUTE('t', 'n'). /** n = number **/
                 END CASE.
 
                 IF ttSheetData.DatATYPE EQ 'FORMULA' THEN
                     hnSAXWriter:WRITE-DATA-ELEMENT('f', ttSheetData.Cell_Value).
+                ELSE IF ttSheetData.DatATYPE EQ 'RICHTEXT' THEN
+                DO:
+                    hnSAXWriter:START-ELEMENT('is').
+                    hnSAXWriter:WRITE-DATA-ELEMENT('t', ttSheetData.Cell_Value).
+                    hnSAXWriter:END-ELEMENT('is').
+                END.
                 ELSE
                 DO:
 
