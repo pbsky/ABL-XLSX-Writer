@@ -13,16 +13,16 @@
 /*     IN THE SOFTWARE.                                                                                                                                     */
 
 CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.xmlwriter:
-    
-    DEFINE PUBLIC PROPERTY hnSAXWriter AS HANDLE  GET. SET.           
-    
+
+    DEFINE PUBLIC PROPERTY hnSAXWriter AS HANDLE  GET. SET.
+
     METHOD PUBLIC VOID _xml_declaration():
-            
+
      IF NOT VALID-HANDLE(hnSAXWriter) THEN
          RETURN.
 
         THIS-OBJECT:hnSAXWriter:VERSION    = "1.0".
-        THIS-OBJECT:hnSAXWriter:ENCODING   = SESSION:CPSTREAM.
+        THIS-OBJECT:hnSAXWriter:ENCODING   = "UTF-8".
         THIS-OBJECT:hnSAXWriter:STANDALONE = TRUE.
 
         THIS-OBJECT:hnSAXWriter:FORMATTED  = FALSE.
@@ -47,13 +47,13 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.xmlwriter:
             pchXMLFile = REPLACE(pchXMLFile,'//','/').
         END.
 
-        
-        
+
+
         DO i = 1 TO (NUM-ENTRIES(pchXMLFile,'/') - 1):
 
             chDirectory = chDirectory + ENTRY(i, pchXMLFile,'/').
 
-            IF chDirectory EQ       '.'  OR 
+            IF chDirectory EQ       '.'  OR
                chDirectory EQ       '..' OR
                chDirectory EQ       ''   OR
                chDirectory MATCHES  '*:' THEN
@@ -63,8 +63,8 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.xmlwriter:
                 chDirectory = '/' + chDirectory.
 
             FILE-INFO:FILE-NAME = chDirectory.
-                                          
-            
+
+
 
             IF FILE-INFO:FULL-PATHNAME EQ ? THEN
             DO:
@@ -74,7 +74,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.xmlwriter:
 
                 stat = OS-ERROR.
 
-                IF stat NE 0 THEN 
+                IF stat NE 0 THEN
                     MESSAGE "Directory not created. System Error #" stat.
             END.
 
@@ -90,32 +90,32 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.xmlwriter:
 /*         MESSAGE chDirectory SKIP */
 /*                 pchXMLFile       */
 /*             VIEW-AS ALERT-BOX.   */
-        
+
         /** Write the XML declaration. **/
         THIS-OBJECT:_xml_declaration().
-            
 
-        IF hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-IDLE OR 
+
+        IF hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-IDLE OR
            hnSAXWriter:WRITE-STATUS EQ SAX-WRITE-COMPLETE THEN
         DO:
             IF NOT THIS-OBJECT:hnSAXWriter:SET-OUTPUT-DESTINATION("file",pchXMLFile) THEN
             DO:
                 MESSAGE 'Error SAX Writer:' QUOTER(pchXMLFile).
             END.
-            ELSE            
+            ELSE
                 THIS-OBJECT:hnSAXWriter:START-DOCUMENT( ).
         END.
-        
+
     END METHOD.
 
     METHOD VOID _xml_close():
-        
+
         IF NOT VALID-HANDLE(hnSAXWriter) THEN
             RETURN.
 
         THIS-OBJECT:hnSAXWriter:END-DOCUMENT( ).
         DELETE OBJECT THIS-OBJECT:hnSAXWriter.
-        
+
     END METHOD.
 
 END CLASS.
