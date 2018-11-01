@@ -712,15 +712,15 @@ DEFINE STREAM SOSCOMMAND.
         FILE-INFO:FILE-NAME = '.'.
 
         IF OPSYS EQ 'WIN32' THEN
-            chOSCOMMAND = SUBSTITUTE('cd "&1"&&&&&4/zip -S -r &4/&2 &3',
+            chOSCOMMAND = SUBSTITUTE('cd "&1"&&&&&4/zip -S -r "&4/&2" &3',
                                      objPackager:temp-dir,
                                      THIS-OBJECT:filename,
                                      chXMLFiles,
                                      FILE-INFO:FULL-PATHNAME).
         ELSE
-            chOSCOMMAND = SUBSTITUTE('cd "&1"; zip -v -r &2 &3',
-                                     objPackager:temp-dir,
-                                     THIS-OBJECT:filename,
+            chOSCOMMAND = SUBSTITUTE('cd "&1"; zip -v -r "&2" &3',
+                                     maskUnixName (objPackager:temp-dir),
+                                     maskUnixName (THIS-OBJECT:filename),
                                      chXMLFiles).
 
         MESSAGE chOSCOMMAND.
@@ -892,7 +892,12 @@ DEFINE STREAM SOSCOMMAND.
     METHOD PRIVATE VOID _prepare_tables():
     END METHOD.
 
-
+    /* masks backslash and doublequotes with backslash Unix */
+    METHOD PRIVATE CHAR maskUnixName (cName as char):
+      cName = replace (cName, "~\", "~\~\"). // mask backslash
+      cName = replace (cName, '"', '~\"'). // mask doublequote
+      return cName.
+    END METHOD.
 
 END CLASS.
 
