@@ -46,6 +46,12 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
    DEFINE PUBLIC PROPERTY hidden                    AS LOGICAL NO-UNDO  GET. PRIVATE SET.
 
+   /** Panes Attributes - rows, columns, topmost visible row, leftmost visible column, pane type **/
+   DEFINE PRIVATE PROPERTY panes_row                AS INTEGER INITIAL ? GET. SET.
+   DEFINE PRIVATE PROPERTY panes_col                AS INTEGER INITIAL ? GET. SET.
+   DEFINE PRIVATE PROPERTY panes_top_row            AS INTEGER INITIAL ? GET. SET.
+   DEFINE PRIVATE PROPERTY panes_left_col           AS INTEGER INITIAL ? GET. SET.
+   DEFINE PRIVATE PROPERTY panes_pane_type          AS INTEGER INITIAL ? GET. SET.
 
     /** View Attributes **/
     DEFINE PUBLIC PROPERTY showGridLines            AS LOGICAL NO-UNDO  GET. PRIVATE SET.
@@ -56,6 +62,7 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
     DEFINE PUBLIC PROPERTY page_view                AS LOGICAL NO-UNDO  GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY zoom                     AS INTEGER NO-UNDO  GET. PRIVATE SET.
     DEFINE PUBLIC PROPERTY zoom_scale_normal        AS LOGICAL NO-UNDO  GET. PRIVATE SET.
+    DEFINE PUBLIC PROPERTY panes                    AS LOGICAL NO-UNDO  GET. PRIVATE SET.
 
     /** sheetFormatPr Attributes **/
     DEFINE PUBLIC PROPERTY default_row_height       AS INTEGER INITIAL 15     NO-UNDO GET. PRIVATE SET.
@@ -599,6 +606,47 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         IF VALID-OBJECT(ob_Col_Format) THEN
             ASSIGN
                 ttCols.objformat = ob_Col_Format.
+
+   END METHOD.
+
+   METHOD PUBLIC VOID freeze_panes (INPUT in_Row AS INTEGER,
+                                    INPUT in_Col AS INTEGER):
+
+
+       freeze_panes(in_Row, in_Col, ?, ?).
+
+   END METHOD.
+
+   METHOD PUBLIC VOID freeze_panes (INPUT in_Row       AS INTEGER,
+                                    INPUT in_Col       AS INTEGER,
+                                    INPUT in_Top_row   AS INTEGER,
+                                    INPUT in_Left_col  AS INTEGER):
+
+       freeze_panes(in_Row, in_Col, in_Top_row, in_Left_col, 0).
+
+   END METHOD.
+
+   /**
+        Create worksheet panes and mark them as frozen.
+        Args:
+            row:       The cell row (zero indexed).
+            col:       The cell column (zero indexed).
+            top_row:   Topmost visible row in scrolling region of pane.
+            left_col:  Leftmost visible row in scrolling region of pane.
+            pane_type: 0 = freeze, 2 = split
+   **/
+   METHOD PRIVATE VOID freeze_panes (INPUT in_Row       AS INTEGER,
+                                     INPUT in_Col       AS INTEGER,
+                                     INPUT in_Top_row   AS INTEGER,
+                                     INPUT in_Left_col  AS INTEGER,
+                                     INPUT in_Pane_type AS INTEGER):
+
+       panes_row = in_Row.
+       panes_col = in_Col.
+       panes_top_row = if in_Top_row = ? then in_Row else in_Top_row.
+       panes_left_col = if in_Left_col = ? then in_Col else in_Left_col.
+       panes_pane_type = in_Pane_type.
+       panes = true.
 
    END METHOD.
 
@@ -1348,10 +1396,6 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
     METHOD PRIVATE VOID _write_sheet_view():
 
-        /*self.panes or len(self.selections):*/
-
-        hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetView':U).
-
         IF NOT THIS-OBJECT:showGridLines THEN
             hnSAXWriter:INSERT-ATTRIBUTE('showGridLines':U, '0' ).
 
@@ -1382,6 +1426,16 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         END.
 
         hnSAXWriter:INSERT-ATTRIBUTE('workbookViewId':U, '0').
+
+        IF THIS-OBJECT:panes THEN
+        DO:
+            hnSAXWriter:START-ELEMENT('sheetView':U).
+            _write_panes().
+            /** Selection is not yet implemented
+                len(self.selections) **/
+            hnSAXWriter:END-ELEMENT('sheetView':U).
+        END.
+
 
    END METHOD.
 
@@ -1664,6 +1718,116 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
    END METHOD.
 
    METHOD PRIVATE VOID _write_legacy_drawing():
+   END METHOD.
+
+   METHOD PRIVATE VOID _write_panes():
+
+        IF panes THEN
+        DO:
+            IF panes_pane_type = 2
+                /** split is not yet supported **/
+                THEN .
+                ELSE _write_freeze_panes().
+        END.
+
+   END METHOD.
+
+   METHOD PRIVATE VOID _write_freeze_panes():
+
+        DEFINE VARIABLE y_split       AS INTEGER           NO-UNDO.
+        DEFINE VARIABLE x_split       AS INTEGER           NO-UNDO.
+        DEFINE VARIABLE row_cell      AS CHARACTER         NO-UNDO.
+        DEFINE VARIABLE col_cell      AS CHARACTER         NO-UNDO.
+        DEFINE VARIABLE top_left_cell AS CHARACTER         NO-UNDO.
+        DEFINE VARIABLE active_pane   AS CHARACTER INIT '' NO-UNDO.
+        DEFINE VARIABLE state         AS CHARACTER INIT '' NO-UNDO.
+        DEFINE VARIABLE active_cell   AS CHARACTER INIT '' NO-UNDO.
+        DEFINE VARIABLE sqref         AS CHARACTER INIT '' NO-UNDO.
+
+        /** y_split and x_split must be in 'zero indexed' Format **/
+        y_split = panes_row - 1.
+        x_split = panes_col - 1.
+        top_left_cell = THIS-OBJECT:Utility:xl_rowcol_to_cell(panes_top_row, panes_left_col).
+
+        /** Selection is not yet implemented
+        # Move user cell selection to the panes
+        if self.selections:
+            (_, active_cell, sqref) = self.selections[0]
+            self.selections = []
+        **/
+
+/*      # Set the active pane */
+        IF panes_row > 1 and panes_col > 1
+        THEN DO:
+            active_pane = 'bottomRight'.
+            row_cell = THIS-OBJECT:Utility:xl_rowcol_to_cell(panes_row, 1).
+            col_cell = THIS-OBJECT:Utility:xl_rowcol_to_cell(1, panes_col).
+            hnSAXWriter:START-ELEMENT('selection':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('pane':U, 'topRight':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('activeCell':U, col_cell).
+                hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, col_cell).
+            hnSAXWriter:END-ELEMENT('selection':U).
+            hnSAXWriter:START-ELEMENT('selection':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('pane':U, 'bottomLeft':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('activeCell':U, row_cell).
+                hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, row_cell).
+            hnSAXWriter:END-ELEMENT('selection':U).
+            hnSAXWriter:START-ELEMENT('selection':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('pane':U, 'bottomRight':U).
+                IF active_cell > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('activeCell':U, active_cell).
+                IF sqref > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, sqref).
+            hnSAXWriter:END-ELEMENT('selection':U).
+        END.
+        ELSE IF panes_col > 1 THEN
+        DO:
+            active_pane = 'topRight'.
+            hnSAXWriter:START-ELEMENT('selection':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('pane':U, 'topRight':U).
+                IF active_cell > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('activeCell':U, active_cell).
+                IF sqref > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, sqref).
+            hnSAXWriter:END-ELEMENT('selection':U).
+        END.
+        ELSE
+        DO:
+            active_pane = 'bottomLeft'.
+            hnSAXWriter:START-ELEMENT('selection':U).
+                hnSAXWriter:INSERT-ATTRIBUTE('pane':U, 'bottomLeft':U).
+                IF active_cell > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('activeCell':U, active_cell).
+                IF sqref > ''
+                    THEN hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, sqref).
+            hnSAXWriter:END-ELEMENT('selection':U).
+        END.
+
+/*      # Set the pane type */
+        if panes_pane_type = 0 THEN
+        DO:
+            state = 'frozen'.
+        END.
+        ELSE IF panes_pane_type = 1 THEN
+        DO:
+            state = 'frozenSplit'.
+        END.
+        ELSE
+        DO:
+            state = 'split'.
+        END.
+
+        /** ELEMENT pane **/
+        hnSAXWriter:START-ELEMENT('pane':U).
+        if x_split > 0
+            THEN hnSAXWriter:INSERT-ATTRIBUTE('xSplit':U, STRING(x_split)).
+        if y_split> 0
+            THEN hnSAXWriter:INSERT-ATTRIBUTE('ySplit':U, STRING(y_split)).
+        hnSAXWriter:INSERT-ATTRIBUTE('topLeftCell':U, top_left_cell).
+        hnSAXWriter:INSERT-ATTRIBUTE('activePane':U, active_pane).
+        hnSAXWriter:INSERT-ATTRIBUTE('state':U, state).
+        hnSAXWriter:END-ELEMENT('pane':U).
+
    END METHOD.
 
    METHOD PRIVATE VOID _write_table_parts():
