@@ -1396,6 +1396,14 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
     METHOD PRIVATE VOID _write_sheet_view():
 
+        IF THIS-OBJECT:panes THEN
+            /** Selection is not yet implemented
+                len(self.selections) **/
+            hnSAXWriter:START-ELEMENT('sheetView':U).
+        ELSE
+            hnSAXWriter:WRITE-EMPTY-ELEMENT('sheetView':U).
+
+
         IF NOT THIS-OBJECT:showGridLines THEN
             hnSAXWriter:INSERT-ATTRIBUTE('showGridLines':U, '0' ).
 
@@ -1429,13 +1437,11 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
 
         IF THIS-OBJECT:panes THEN
         DO:
-            hnSAXWriter:START-ELEMENT('sheetView':U).
             _write_panes().
             /** Selection is not yet implemented
                 len(self.selections) **/
             hnSAXWriter:END-ELEMENT('sheetView':U).
         END.
-
 
    END METHOD.
 
