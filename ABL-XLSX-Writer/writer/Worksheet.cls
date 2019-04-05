@@ -1755,6 +1755,31 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         x_split = panes_col - 1.
         top_left_cell = THIS-OBJECT:Utility:xl_rowcol_to_cell(panes_top_row, panes_left_col).
 
+/*      # Set the pane type */
+        if panes_pane_type = 0 THEN
+        DO:
+            state = 'frozen'.
+        END.
+        ELSE IF panes_pane_type = 1 THEN
+        DO:
+            state = 'frozenSplit'.
+        END.
+        ELSE
+        DO:
+            state = 'split'.
+        END.
+
+        /** ELEMENT pane **/
+        hnSAXWriter:START-ELEMENT('pane':U).
+        if x_split > 0
+            THEN hnSAXWriter:INSERT-ATTRIBUTE('xSplit':U, STRING(x_split)).
+        if y_split> 0
+            THEN hnSAXWriter:INSERT-ATTRIBUTE('ySplit':U, STRING(y_split)).
+        hnSAXWriter:INSERT-ATTRIBUTE('topLeftCell':U, top_left_cell).
+        hnSAXWriter:INSERT-ATTRIBUTE('activePane':U, active_pane).
+        hnSAXWriter:INSERT-ATTRIBUTE('state':U, state).
+        hnSAXWriter:END-ELEMENT('pane':U).
+
         /** Selection is not yet implemented
         # Move user cell selection to the panes
         if self.selections:
@@ -1808,31 +1833,6 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
                     THEN hnSAXWriter:INSERT-ATTRIBUTE('sqref':U, sqref).
             hnSAXWriter:END-ELEMENT('selection':U).
         END.
-
-/*      # Set the pane type */
-        if panes_pane_type = 0 THEN
-        DO:
-            state = 'frozen'.
-        END.
-        ELSE IF panes_pane_type = 1 THEN
-        DO:
-            state = 'frozenSplit'.
-        END.
-        ELSE
-        DO:
-            state = 'split'.
-        END.
-
-        /** ELEMENT pane **/
-        hnSAXWriter:START-ELEMENT('pane':U).
-        if x_split > 0
-            THEN hnSAXWriter:INSERT-ATTRIBUTE('xSplit':U, STRING(x_split)).
-        if y_split> 0
-            THEN hnSAXWriter:INSERT-ATTRIBUTE('ySplit':U, STRING(y_split)).
-        hnSAXWriter:INSERT-ATTRIBUTE('topLeftCell':U, top_left_cell).
-        hnSAXWriter:INSERT-ATTRIBUTE('activePane':U, active_pane).
-        hnSAXWriter:INSERT-ATTRIBUTE('state':U, state).
-        hnSAXWriter:END-ELEMENT('pane':U).
 
    END METHOD.
 
