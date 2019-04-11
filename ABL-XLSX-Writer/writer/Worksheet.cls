@@ -238,21 +238,21 @@ CLASS ABL-XLSX-Writer.ABL-XLSX-Writer.writer.Worksheet INHERITS xmlwriter:
         ASSIGN
             ttSheetDataRow.CellRow = in_Row.
 
-        IF VALID-OBJECT(Obj_Format) THEN
+        IF VALID-OBJECT(Obj_Format) AND Obj_Format:num_format EQ '0' THEN
         DO:
-            IF chDataType EQ 'DATETIME' AND Obj_Format:num_format EQ '0' THEN
+            IF chDataType EQ 'DATETIME' THEN
                 Obj_Format:set_num_Format(INPUT 'd mmmm yyyy hh:mm:ss').
 
-            IF chDataType EQ 'DATE'     AND Obj_Format:num_format EQ '0' THEN
+            IF chDataType EQ 'DATE' THEN
                 Obj_Format:set_num_Format(INPUT 'd mmmm yyyy').
 
-            IF chDataType EQ 'DECIMAL' AND Obj_Format:num_format EQ '0' THEN
+            IF chDataType EQ 'DECIMAL' THEN
                 Obj_Format:set_num_Format(INPUT '#,##0.00'). /** Option Number 2**/
 
-            IF chDataType EQ 'INTEGER' AND Obj_Format:num_format EQ '0' THEN
+            IF chDataType EQ 'INTEGER' THEN
                 Obj_Format:set_num_Format(INPUT '#,##0').    /** Option Number 3**/
 
-            IF chDataType EQ 'CHARACTER' AND Obj_Format:num_format EQ '0' THEN
+            IF chDataType EQ 'CHARACTER' OR chDataType EQ 'FORMULA' OR chDataType EQ 'RICHTEXT' THEN
                 Obj_Format:set_num_Format(INPUT 'General').    /** Option Number 0**/
 
         END.
