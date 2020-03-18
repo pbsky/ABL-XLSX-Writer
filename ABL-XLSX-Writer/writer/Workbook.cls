@@ -24,7 +24,7 @@ DEFINE STREAM SOSCOMMAND.
  * Workbook Class Object
  */
 
-    DEFINE PUBLIC PROPERTY filename            AS CHARACTER                    GET. PRIVATE SET.
+    DEFINE PUBLIC  PROPERTY filename            AS CHARACTER                    GET. PRIVATE SET.
     DEFINE PRIVATE PROPERTY TempDir             AS CHARACTER                    GET. SET.
     DEFINE PRIVATE PROPERTY sheetname           AS CHARACTER    INITIAL 'Sheet' GET. SET.
     DEFINE PRIVATE PROPERTY sheetname_count     AS INTEGER      INITIAL 0       GET. SET.
@@ -32,6 +32,7 @@ DEFINE STREAM SOSCOMMAND.
     DEFINE PRIVATE PROPERTY format_count        AS INTEGER      INITIAL 0       GET. SET.
     DEFINE PUBLIC  PROPERTY SharedStringTable   AS CLASS SharedStringTable      GET. SET.
     DEFINE PUBLIC  PROPERTY xf_formats          AS HANDLE                       GET. PRIVATE SET.
+    DEFINE PRIVATE PROPERTY verbose             AS LOGICAL      INITIAL FALSE   GET. SET.
 
 
 
@@ -712,7 +713,7 @@ DEFINE STREAM SOSCOMMAND.
         FILE-INFO:FILE-NAME = '.'.
 
         IF OPSYS EQ 'WIN32' THEN
-            chOSCOMMAND = SUBSTITUTE('cd "&1"&&&&&4/zip -S -r "&4/&2" &3',
+            chOSCOMMAND = SUBSTITUTE('cd "&1"&&&&&4/zip -r "&4/&2" &3',
                                      objPackager:temp-dir,
                                      THIS-OBJECT:filename,
                                      chXMLFiles,
@@ -723,7 +724,8 @@ DEFINE STREAM SOSCOMMAND.
                                      maskUnixName (THIS-OBJECT:filename),
                                      chXMLFiles).
 
-        MESSAGE chOSCOMMAND.
+        IF THIS-OBJECT:verbose THEN
+            MESSAGE chOSCOMMAND.
 
         DEFINE VARIABLE chInputResponce AS CHARACTER   NO-UNDO.
 
@@ -733,7 +735,8 @@ DEFINE STREAM SOSCOMMAND.
             chInputResponce = ''.
             IMPORT STREAM SOSCOMMAND UNFORMATTED  chInputResponce.
 
-            MESSAGE 'ZIP: ' chInputResponce.
+            IF THIS-OBJECT:verbose THEN
+                MESSAGE 'ZIP: ' chInputResponce.
 
         END.
         INPUT STREAM SOSCOMMAND CLOSE.
